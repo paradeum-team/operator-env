@@ -78,7 +78,7 @@ kubectl get noDes
 
 
 ```
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/Deploy/recommended.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml
 
 或
 kubectl create -f kubernetes-dashboard.yaml
@@ -102,5 +102,5 @@ kubectl proxy
 通过如下 URL 访问 Kubernetes dashboard
 
 ```
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-DashboarD:/proxy/
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 ```
