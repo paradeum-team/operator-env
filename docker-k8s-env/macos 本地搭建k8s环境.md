@@ -74,33 +74,62 @@ kubectl get nodes
 ```
 
 ## 7、使用
-### 7.1 配置k8s控制台
+### 7.1 k8s 控制台
+- 配置 docker 加速
+	
+	进入 docker 控制台，增加如下语句，并重启 docker
+	
+		"registry-mirrors": [https://hub-mirror.c.163.com/,https://reg-mirror.qiniu.com,https://registry.docker-cn.com]
+	![](./images/docker-desktop-3.png)
+- 预加载镜像
 
+		docker pull kubernetesui/dashboard:v2.0.4
+		docker pull kubernetesui/metrics-scraper:v1.0.4
+- 发布 k8s 控制台
 
-```
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml
-
-或
-kubectl create -f kubernetes-dashboard.yaml
-
-```
-
-检查 kubernetes-dashboard 应用状态
+	进入 k8s-for-docker-desktop 目录
+	
+		kubectl create -f kubernetes-dashboard.yaml
+-  检查 kubernetes-dashboard 应用状态
 
 ```
 kubectl get pod -n kubernetes-dashboard
 
 ```
 
-开启 API Server 访问代理
+- 创建控制台登陆 token
+
+		TOKEN=$(kubectl -n kube-system describe secret default| awk '$1=="token:"{print $2}')
+		kubectl config set-credentials docker-for-desktop --token="${TOKEN}"
+		echo $TOKEN		
+- 开启控制台访问代理
 
 ```
-kubectl proxy
+kubectl proxy --port=8080 
 
 ```
 
-通过如下 URL 访问 Kubernetes dashboard
+- 通过如下 URL 访问 Kubernetes dashboard
 
 ```
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+http://127.0.0.1:8080/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=_all
 ```
+
+- 选择使用方式
+	- 令牌登陆，填入上面的 TOKEN
+	- 或者使用配置文件，mac 在 `$HOME/.kube/config`
+
+### 7.2 安装 helm
+通过 brew 安装
+
+	# Use homebrew on Mac
+	brew install helm
+	
+	# Add helm repo
+	helm repo add stable http://mirror.azure.cn/kubernetes/charts/
+	
+	# Update charts repo
+	helm repo update
+	
+## 文档参考
+[Docker Desktop for Mac/Windows 开启 Kubernetes](https://github.com/AliyunContainerService/k8s-for-docker-desktop)
