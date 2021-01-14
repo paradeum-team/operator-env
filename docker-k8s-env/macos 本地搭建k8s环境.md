@@ -7,7 +7,7 @@
 ## 2、启动 Docker 查看对应的 K8S 版本
 - 点击 `about Docker Desktop`,文档当前版本为 k8s `v1.19.3`
 
-	![](./images/Docker-Desktop-1.png)
+	![](./images/docker-desktop-1.png)
 
 ## 3、拉取 k8s 依赖的镜像
 因为众所周知的原因，所以需要通过国内镜像仓库下载，这里可以按照网站[操作](https://github.com/AliyunContainerService/k8s-for-Docker-Desktop)
@@ -36,7 +36,7 @@ cd k8s-for-docker-desktop
 ## 4、开启配置，启动k8s
 勾选如下：
 
-![](./images/Docker-Desktop-2.png)
+![](./images/docker-desktop-2.png)
 
 然后重启，Docker。
 
