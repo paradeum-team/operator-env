@@ -70,7 +70,7 @@ kubectl config use-context docker-desktop
 
 ## 验证 Kubernetes 集群状态
 kubectl cluster-info
-kubectl get noDes
+kubectl get nodes
 ```
 
 ## 7、使用
