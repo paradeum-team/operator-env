@@ -24,6 +24,12 @@ helm install prometheus-community prometheus-community/kube-prometheus-stack -n 
 --set nodeExporter.enabled=false
 ```
 
+查看 helm 部署的 chart
+
+```
+helm ls -n monitoring
+```
+
 查看 prometheus-operator 相关pod 状态
 
 ```
@@ -44,6 +50,13 @@ kubectl get secret prometheus-community-grafana -o yaml  -n monitoring |grep " a
 ```
 
 通过访问 http://127.0.0.1:3000 访问grafana
+
+
+## 卸载 prometheus-community
+
+```
+helm uninstall prometheus-community -n monitoring
+```
 
 参考：
 
