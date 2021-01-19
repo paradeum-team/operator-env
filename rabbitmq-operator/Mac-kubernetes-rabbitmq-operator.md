@@ -5,14 +5,17 @@
 - Kubernetes 1.17或以上
 - RabbitMQ image 3.8.8+
 
-### 部署rabbitmq cluster-operator
+### 部署 rabbitmq cluster-operator
+- 下载部署文件[cluster-operator.yml](https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml)
+- 执行 
 
-- 下载文件，[cluster-operator.yml](https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml)
-- 执行 kubectl apply -f cluster-operator.yml
+		kubectl apply -f cluster-operator.yml
 
-### 部署rabbitmq服务
-
-kubectl apply -f https://raw.githubusercontent.com/rabbitmq/cluster-operator/main/docs/examples/hello-world/rabbitmq.yaml
+### 部署 rabbitmq 服务
+- 下载部署文件 [rabbitmq.yaml](https://raw.githubusercontent.com/rabbitmq/cluster-operator/main/docs/examples/hello-world/rabbitmq.yaml)
+- 执行
+	
+		kubectl apply -f rabbitmq.yaml
 
 ### 验证服务可用性
 
@@ -38,6 +41,26 @@ NAME                                  READY   AGE
 statefulset.apps/hello-world-server   1/1     4d17h
 ```
 
+## 问题
+- rabbitmq 官方镜像下载不了
+
+	因为众所周知的问题，需要设置 docker 的 mirror, 
+	
+	- 设置 `Preferences -> Docker Engine `
+
+			{
+			  "debug": true,
+			  "experimental": false,
+			  "registry-mirrors": [
+			    "https://registry.docker-cn.com"
+			  ]
+			}
+	- 查询镜像地址
+
+			kubectl edit statefulset/rabbitmq-cluster-server
+- 启动 node 调度失败
+	- 发现 pod 启动 pending,发现报内存问题 `kubectl describe pod rabbitmq-cluster-server-0 `，报 `Insufficient memory` 内存不足，mac docker 的内存不足
+	- 设置 `Preferences -> Resources`，调节 4GB
 
 ### 文档参考
 
