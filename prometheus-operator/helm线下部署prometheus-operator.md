@@ -1,5 +1,26 @@
 # helm线下部署prometheus-operator
 
+### 添加 repo, 更新repo 信息
+
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add stable https://charts.helm.sh/stable
+helm repo update
+```
+
+### 查看所有可配置选项的详细注释
+
+使用命令查看
+
+```
+helm show values prometheus-community/kube-prometheus-stack
+```
+
+或 访问github 地址查看
+
+```
+https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+```
 ## 下载相关镜像到 私有仓库
 
 镜像地址从下面values.yaml中查找 `repository` 
