@@ -1,4 +1,4 @@
-# helm本地部署prometheus-operator
+# helm线下部署prometheus-operator
 
 ## 下载相关镜像到 私有仓库
 
