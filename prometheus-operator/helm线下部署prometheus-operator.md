@@ -153,3 +153,33 @@ Usage:
 ```
 helm upgrade prometheus-community kube-prometheus-stack-13.0.2.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
 ```
+## 查看 helm 部署的 charts
+
+```
+helm ls -n monitoring
+```
+
+## 查看 prometheus-operator 相关pod 状态
+
+```
+kubectl --namespace monitoring get pods
+```
+
+## 查看 grafana 登录用户密码
+
+```
+kubectl get secret prometheus-community-grafana -o yaml  -n monitoring |grep " admin-user:"|awk '{print $2}'|base64 -d
+kubectl get secret prometheus-community-grafana -o yaml  -n monitoring |grep " admin-password:"|awk '{print $2}'|base64 -d
+```
+
+## 访问grafana
+
+```
+http://grafana.apps164103.hisun.local/
+```
+
+## 卸载promehteus-operator相关服务
+
+```
+helm uninstall prometheus-community -n  monitoring
+```
