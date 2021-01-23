@@ -1,4 +1,4 @@
-# kafka and zk 
+# 说明 
 在k8s集群上使用kafka的operator 来安装kafka集群。
 
 欲搭建kafka 环境，需要先搭建kafka的依赖的环境。
@@ -11,14 +11,14 @@
 - zookeeper
 - Prometheus
 
-# 4. install kafka-operator
+# install kafka-operator
 
 
 这里也有两种方式安装。
 
 这里kafka的部署，其operator 可以使用helm 方式部署，但是kafka实例却没有对应的helm ，需要按照yaml发布部署，也可以按照zk的操作写一个kafka的helm 部署。
 
-## 4.1 install with helm (默认配置)
+## 1.1 install with helm (默认配置)
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
 # Using helm3
@@ -31,22 +31,22 @@ kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
 kubectl create -n kafka -f config/samples/kafkacluster-prometheus.yaml
 ```
 
-## 4.1 install with helm(自定义)
+## 1.2 install with helm(自定义)
 使用自定义配置 values.yaml 和离线chart 安装
 
-### 4.1.1 安装 cert-manager & zookeeper
-### 4.1.2 安装kafka-operator对应的crd资源
+### 1.2.1 安装 cert-manager & zookeeper
+### 1.2.2 安装kafka-operator对应的crd资源
 ```
 kubectl apply --validate=false -f https://github.com/banzaicloud/kafka-operator/releases/download/v0.12.3/kafka-operator.crds.yaml
 ```
 
-### 4.1.3 添加 repo, 更新repo 信息
+### 1.2.3 添加 repo, 更新repo 信息
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 ```
 
 
-### 4.1.4 下载相关镜像到私有仓库
+### 1.2.4 下载相关镜像到私有仓库
 ```
 https://github.com/banzaicloud/kafka-operator/blob/master/charts/kafka-operator/values.yaml
 ```
@@ -60,16 +60,16 @@ ghcr.io/banzaicloud/jmx-javaagent:0.14.0
 ghcr.io/banzaicloud/kafka:2.13-2.6.0-bzc.1
 ```
 
-### 4.1.4 下载chart
+### 1.2.4 下载chart
 ```
 helm pull banzaicloud-stable/kafka-operator --version v0.14.0
 
 ```
 
-### 4.1.5 自定义values.yaml
+### 1.2.5 自定义values.yaml
 todo
 
-### 4.1.6 安装
+### 1.2.6 安装
 ```
 $ helm install kafka-operator --set certManager.namespace=<your cert manager namespace> --namespace=kafka  --create-namespace banzaicloud-stable/kafka-operator
 ```
@@ -77,17 +77,17 @@ $ helm install kafka-operator --set certManager.namespace=<your cert manager nam
 
 
 
-## 4.2 使用yaml方式
+## 1.3 使用yaml方式
 先拉取代码到本地。如：`git clone https://github.com/banzaicloud/kafka-operator.git`
 
 切换目录到 `kafka-operator/config`
 
-### 4.2.1 建立 `kafka`命名空间
+### 1.3.1 建立 `kafka`命名空间
 ```
 kubectl create namespace kafka
 ```
 
-### 4.2.2 注册定义资源(crd)
+### 1.3.2 注册定义资源(crd)
 ```
 kubectl apply -f base/crds/kafka.banzaicloud.io_kafkaclusters.yaml 
 kubectl apply -f base/crds/kafka.banzaicloud.io_kafkatopics.yaml 
@@ -95,14 +95,14 @@ kubectl apply -f base/crds/kafka.banzaicloud.io_kafkausers.yaml
 ```
 
 
-### 4.2.3 安装权限控制(rbac)
+### 1.3.3 安装权限控制(rbac)
 ```
 kubectl apply -f  base/rbac/role.yaml 
 kubectl apply -f  base/rbac/role_binding.yaml 
 kubectl apply -f  base/rbac/leader_election_role.yaml 
 kubectl apply -f  base/rbac/leader_election_role_binding.yaml 
 ```
-### 4.2.4 安装 secret
+### 1.3.4 安装 secret
 因没有弄清楚 cert-manager 怎么使用，这里建立一个secret。部署需要的tls.crt配置
 
 修改文件 `config/overlays/basic/certificate.yaml`,把其 `namespace：system` 更改成`namespace:kafka`
@@ -116,7 +116,7 @@ kubectl apply -f  base/rbac/leader_election_role_binding.yaml
 
 
 
-### 4.2.5 安装 operator的controller manager
+### 1.3.5 安装 operator的controller manager
 这里需要注意:
 
 - 把命名空间 system 修改为 kafka
@@ -154,7 +154,7 @@ kubectl apply -f base/manager/manager.yaml
 ```
 
 
-### 4.2.5 安装webhook
+### 1.3.5 安装webhook
 
 ```
 kubectl apply -f base/alertmanager/service.yaml
@@ -162,7 +162,7 @@ kubectl apply -f base/webhook/manifests.yaml
 kubectl apply -f base/webhook/service.yaml
 ```
 
-### 4.2.6 安装部署 kafka集群
+### 1.3.6 安装部署 kafka集群
 
 核对 `config/samples/simplekafkacluster.yaml` 文件，如果zk 安装在 命名空间`zookeeper`下，可以忽略核对
 
@@ -182,7 +182,7 @@ kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
 kubectl create -n default -f config/samples/kafkacluster-prometheus.yaml
 ```
 
-### 4.2.7 kafka集群扩缩
+### 1.3.7 kafka集群扩缩
 
 修改发布模板 `config/samples/simplekafkacluster.yaml` 修改其中的
 
@@ -208,7 +208,7 @@ kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
 
 
 
-### 4.2.8 验证kafka
+### 1.3.8 验证kafka
 
 配置 `kafka-cruisecontrol-svc:8090` 或者打通容器和本地的网络[详情](https://github.com/paradeum-team/operator-env/blob/main/docker-k8s-env/macos%20%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAk8s%E7%8E%AF%E5%A2%83.md)
 
