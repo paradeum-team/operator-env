@@ -148,7 +148,7 @@ kubectl get svc -n zookeeper
 kafka-zk-zookeeper-client     ClusterIP   10.110.60.213    <none>        2181/TCP                              23m
 kafka-zk-zookeeper-headless   ClusterIP   None             <none>        2181/TCP,2888/TCP,3888/TCP,7000/TCP   23m
 zkweb                         ClusterIP   10.105.215.100   <none>        8080/TCP                              5m14s
-``` ·
+```
 
 
 ## 参考
