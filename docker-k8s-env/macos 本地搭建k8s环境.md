@@ -297,7 +297,7 @@ Docker for Mac无法在macOS通过IP直接访问Docker中容器，只能通过EX
 			- 将以上 ip 加入到配置文件
 
 					echo 'route 10.96.0.0/12' >> /usr/local/etc/docker-connector.conf
-					echo 'route 1192.168.65.3/24' >> /usr/local/etc/docker-connector.conf
+					echo 'route 192.168.65.3/24' >> /usr/local/etc/docker-connector.conf
 		- 高级(未测试)
 			- 暴露给其他同网络的人
 				
