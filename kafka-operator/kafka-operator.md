@@ -58,6 +58,7 @@ iamges list:
 ghcr.io/banzaicloud/kafka-operator:v0.14.0
 gcr.io/kubebuilder/kube-rbac-proxy:v0.5.0
 ghcr.io/banzaicloud/jmx-javaagent:0.14.0
+ghcr.io/banzaicloud/cruise-control:2.5.23
 ghcr.io/banzaicloud/kafka:2.13-2.6.0-bzc.1
 ```
 
@@ -111,13 +112,13 @@ $ helm install kafka-operator  --namespace=kafka  --create-namespace registry.hi
 
 - 有证书
 ```
-$ helm install kafka-operator --set certManager.namespace=<your cert manager namespace> --namespace=kafka  --create-namespace registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
+$ helm install kafka-operator --set certManager.namespace=cert-manager --namespace=kafka  --create-namespace registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
 ```
 
 或者
 
 ```
-helm install kafka-operator kafka-operator-v0.14.0.tgz kafka-operator-stack-values.yaml -n kafka
+helm install kafka-operator kafka-operator-0.4.4.tgz -f kafka-operator-stack-values.yaml -n kafka
 ```
 
 ### 1.2.7 更新升级
@@ -131,6 +132,18 @@ helm upgrade kafka-operator --set crd.enabled=true --namespace=kafka registry.hi
 ```
  helm delete  kafka-operator -n kafka
 ```
+
+### 1.2.9 接着部署kafka实例
+由于kafka实例没有对应的helm，所以需要使用yaml 来部署
+
+```
+# Add your zookeeper svc name to the configuration
+kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
+# If prometheus operator installed create the ServiceMonitors
+kubectl create -n kafka -f config/samples/kafkacluster-prometheus.yaml
+```
+
+
 
 
 ## 1.3 使用yaml方式
