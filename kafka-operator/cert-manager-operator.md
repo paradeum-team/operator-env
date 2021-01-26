@@ -37,6 +37,16 @@ helm install --name cert-manager --namespace cert-manager --version v0.15.1 jets
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml
 ```
 
+### 1.3 使用helm方式安装，修改配置
+从 `https://github.com/jetstack/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml` 获取配置参数
+
+**image list:**
+
+- quay.io/jetstack/cert-manager-controller
+- quay.io/jetstack/cert-manager-webhook
+- quay.io/jetstack/cert-manager-cainjector
+
+
 
 ## 参考文档
 - [banzaicloud/kafka-operator 源码](https://github.com/banzaicloud/kafka-operator)

@@ -17,7 +17,28 @@
 
 这里仍然推荐使用yaml 方式。[参考文档](https://github.com/pravega/zookeeper-operator)
 
-## 1.1 使用helm 方式(不推荐，这个镜像比较旧)
+## 1.1 使用helm 方式(默认安装)
+### 1.1.1 使用新镜像默认配置
+
+```
+ helm repo add pravega https://charts.pravega.io
+ helm repo update
+# Using helm3
+helm install zookeeper-operator --namespace=zookeeper --create-namespace pravega/zookeeper-operator
+
+kubectl create --namespace zookeeper -f - <<EOF
+apiVersion: zookeeper.pravega.io/v1beta1
+kind: ZookeeperCluster
+metadata:
+  name: zookeeper
+  namespace: zookeeper
+spec:
+  replicas: 3
+EOF
+```
+
+### 1.1.2 不推荐，这个镜像比较旧
+
 这里参考kafka-operator，没有验证helm
 
 ```
@@ -38,6 +59,9 @@ spec:
   replicas: 3
 EOF
 ```
+ 
+
+
 
 ## 1.2 使用 helm 安装 (推荐一)
 基于本机环境已有镜像，修改values.yaml 和离线chart，转移线上环境安装。
@@ -73,7 +97,7 @@ https://github.com/pravega/zookeeper-operator/blob/master/charts/zookeeper/value
 pravega/zookeeper-operator:0.2.9
 lachlanevenson/k8s-kubectl:v1.16.10
 pravega/zookeeper:0.2.9
-
+tobilg/zookeeper-webui:latest
 
 ### 1.2.4 下载chart
 ```
@@ -89,6 +113,8 @@ kubectl create namespace zookeeper
 修改自定义的yaml文件：
 
 todo : 在原有的values.yaml 上改，
+
+- 修改zk-operator 的helm 属性文件
 
 ```
 # 域名后缀
@@ -109,6 +135,7 @@ hooks:
 EOF
 ```
 
+- 修改zookeeper 的helm属性文件 或者 **扩缩更新**
 
 ```
 # 域名后缀
@@ -133,7 +160,7 @@ EOF
 ### 1.2.7 执行部署
 使用默认的安装包
 ```
-$ helm install zookeeper-operator pravega/zookeeper-operator --version=0.2.9
+$ helm install zookeeper-operator pravega/zookeeper-operator --version=0.2.9 -n zookeeper
 ```
 
 使用自定配置和离线的chart包安装
