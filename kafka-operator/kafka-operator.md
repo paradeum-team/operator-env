@@ -43,6 +43,7 @@ kubectl apply --validate=false -f https://github.com/banzaicloud/kafka-operator/
 ### 1.2.3 添加 repo, 更新repo 信息
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
+helm repo update
 ```
 
 
@@ -69,12 +70,67 @@ helm pull banzaicloud-stable/kafka-operator --version v0.14.0
 ### 1.2.5 自定义values.yaml
 todo
 
+```
+# 域名后缀
+domain="apps164103.hisun.local"
+# 私有镜像仓库地址
+repository="registry.hisun.netwarps.com"
+
+cat <<EOF > kafka-operator-stack-values.yaml 
+operator:
+  annotations: {}
+  image:
+    repository: ghcr.io/banzaicloud/kafka-operator
+    tag: v0.14.0
+    pullPolicy: IfNotPresent
+certManager:
+  namespace: "cert-manager"
+  enabled: true
+ 
+prometheusMetrics:
+  enabled: true
+  authProxy:
+    enabled: true
+    image:
+      repository: gcr.io/kubebuilder/kube-rbac-proxy
+      tag: v0.5.0
+      pullPolicy: IfNotPresent
+    serviceAccount:
+      create: true
+      name: kafka-operator-authproxy
+EOF
+
+```
+
 ### 1.2.6 安装
+- 无证书
+
 ```
-$ helm install kafka-operator --set certManager.namespace=<your cert manager namespace> --namespace=kafka  --create-namespace banzaicloud-stable/kafka-operator
+$ helm install kafka-operator  --namespace=kafka  --create-namespace registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
 ```
 
+- 有证书
+```
+$ helm install kafka-operator --set certManager.namespace=<your cert manager namespace> --namespace=kafka  --create-namespace registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
+```
 
+或者
+
+```
+helm install kafka-operator kafka-operator-v0.14.0.tgz kafka-operator-stack-values.yaml -n kafka
+```
+
+### 1.2.7 更新升级
+
+```
+helm upgrade kafka-operator --set crd.enabled=true --namespace=kafka registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
+
+```
+
+### 1.2.8 卸载
+```
+ helm delete  kafka-operator -n kafka
+```
 
 
 ## 1.3 使用yaml方式
