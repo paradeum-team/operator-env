@@ -146,6 +146,45 @@ kubectl apply -f prometheus-roles.yaml
 https://grafana.com/api/dashboards/10991/revisions/8/download
 
 
+### 界面演示
+
+- 将rabbitmq的实例个数扩充至3个
+- 使用压测工具进行测试
+	
+	```
+	# 使用默认初始化的用户名密码，在Secrets中找到hello-world-default-user获取密码
+kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://JxMMlmr-925Ip3rviMLvMur7PgqMPIqN:LHlv-0_sQ7upKL-AHbHzFiRCI4l-2UWe@hello-world" 
+	
+	```
+- 打开grafana界面
+	
+	```
+	kubectl port-forward svc/prometheus-community-grafana 3000:80 -n monitoring
+	
+	# 访问
+	http://localhost:3000/
+	
+	```
+	
+- 找到rabbitmq-overview的dashboard
+
+	![](./images/rabbitmq-dashboard1.png)
+	![](./images/rabbitmq-dashboard2.png)
+	![](./images/rabbitmq-dashboard3.png)
+
+- 删除压测工具
+
+	```
+     kubectl delete pod perf-test
+     
+    ```
+- rabbitmq具体指标信息参考
+
+	[rabbitmq 指标解析](https://www.rabbitmq.com/prometheus.html#grafana-configuration)
+
+	
+
+
 ### 参考资料
 
 [官方文档](https://www.rabbitmq.com/kubernetes/operator/operator-monitoring.html)
