@@ -15,8 +15,21 @@
 - 下载部署文件 [rabbitmq.yaml](https://raw.githubusercontent.com/rabbitmq/cluster-operator/main/docs/examples/hello-world/rabbitmq.yaml)
 - 执行
 	
-		kubectl apply -f rabbitmq.yaml
+	kubectl apply -f rabbitmq.yaml
 
+### 如果遇到找不到pvc的问题可能是本地没有指定storageClass
+
+```
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: hello-world
+spec:
+   persistence:
+    storageClassName: local-path
+    storage: 10Gi
+	
+```
 ### 验证服务可用性
 
 - 查看crd是否创建成功
