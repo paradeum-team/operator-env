@@ -1,4 +1,4 @@
-# Rabbitmq-operator
+# Rabbitmq-operator yaml方式部署
 
 ### 环境准备
 
@@ -15,8 +15,21 @@
 - 下载部署文件 [rabbitmq.yaml](https://raw.githubusercontent.com/rabbitmq/cluster-operator/main/docs/examples/hello-world/rabbitmq.yaml)
 - 执行
 	
-		kubectl apply -f rabbitmq.yaml
+	kubectl apply -f rabbitmq.yaml
 
+### 如果遇到找不到pvc的问题可能是本地没有指定storageClass
+
+```
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: hello-world
+spec:
+   persistence:
+    storageClassName: local-path
+    storage: 10Gi
+	
+```
 ### 验证服务可用性
 
 - 查看crd是否创建成功
@@ -90,16 +103,20 @@
     
 - 测试rabbitmq，使用吞吐量测试工具PerfTest
   - 要安装并运行 PerfTest，请运行以下命令:
+  
     ```
     kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://${username}:${password}@${service}"
     ```
+    
     即：
+    
     ```
-    # 使用默认初始化的用户名密码
+    # 使用默认初始化的用户名密码，在Secrets中找到hello-world-default-user获取密码
     kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://JxMMlmr-925Ip3rviMLvMur7PgqMPIqN:LHlv-0_sQ7upKL-AHbHzFiRCI4l-2UWe@hello-world"
     
     ```
   - 要验证 PerfTest 正在发送和接收消息，请运行:
+  
     ```
     kubectl logs -f perf-test
     
@@ -136,9 +153,11 @@
     
     ```
   - 若要删除 PerfTest 实例，请使用
+  
     ```
      kubectl delete pod perf-test
     ```
+  
   - [PerfTest源码](https://github.com/rabbitmq/rabbitmq-perf-test)
    
 - 个人服务调用rabbitmq，参考[rabbitmq教程](https://www.rabbitmq.com/getstarted.html)
@@ -159,8 +178,12 @@
 	- 查询镜像地址
 
 			kubectl edit statefulset/rabbitmq-cluster-server
+			
 - 启动 node 调度失败
-	- 发现 pod 启动 pending,发现报内存问题 `kubectl describe pod rabbitmq-cluster-server-0 `，报 `Insufficient memory` 内存不足，mac docker 的内存不足
+	- 发现 pod 启动 pending,发现报内存问题 
+
+		`kubectl describe pod rabbitmq-cluster-server-0 `，报 `Insufficient memory` 内存不足，mac docker 的内存不足
+		
 	- 设置 `Preferences -> Resources`，调节 4GB
 
 ### 文档参考
