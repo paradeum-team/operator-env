@@ -77,8 +77,9 @@ helm install elastic-operator elastic/eck-operator -n elastic-system --create-na
 ### 7.2 离线chart 部署
 
 ```
-helm install elastic-operator eck-operator-1.3.1.tgz -n elastic-system --create-namespace \
---set=webhook.enabled=false \
+helm install elastic-operator eck-operator-1.3.1.tgz -n elastic-system  \
+--set webhook.enabled=false \
+--set image.repository=registry.hisun.netwarps.com/eck/eck-operator 
 ```
 
 
