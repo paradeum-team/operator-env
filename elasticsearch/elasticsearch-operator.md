@@ -26,7 +26,8 @@ helm show values elastic/eck-operator
 **镜像 List:**
 
 - docker.elastic.co/eck/eck-operator:1.3.1
-- docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+- docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+- docker.elastic.co/kibana/kibana:7.10.2
 
 ## 4 下载chart 
 
@@ -78,7 +79,7 @@ helm install elastic-operator elastic/eck-operator -n elastic-system --create-na
 
 ```
 helm install elastic-operator eck-operator-1.3.1.tgz -n elastic-system  \
---set webhook.enabled=false \
+--set webhook.enabled=true \
 --set image.repository=registry.hisun.netwarps.com/eck/eck-operator 
 ```
 
@@ -88,6 +89,62 @@ helm install elastic-operator eck-operator-1.3.1.tgz -n elastic-system  \
 
 
 ## 9 部署elastic 实例
+### 方式一 [HTTP settings and TLS SANsedit](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-http-settings-tls-sans.html)
+**模板文件--1 (master-slave分开)：** elasticsearch.yaml
+
+```
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: quickstart
+spec:
+  version: 7.10.2
+  http:
+    service:
+      spec:
+        selector:
+          elasticsearch.k8s.elastic.co/cluster-name: "quickstart"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+  nodeSets:
+  - name: master
+    count: 1
+    config:
+      node.roles: ["master"]
+  - name: data
+    count: 5
+    config:
+      node.roles: ["data"]
+```
+
+**模板文件--2 (master-slave 混合)：** elasticsearch.yaml
+
+```
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: quickstart
+spec:
+  version: 7.10.2
+  http:
+    service:
+      spec:
+        type: LoadBalancer
+  nodeSets:
+  - name: default
+    count: 3
+
+```
+
+
+**命令执行:** 这是使用模板2
+
+```
+kubectl apply -f elasticsearch.yaml -n elastic-system
+```
+
+
+### 方式二
+
 由于elastic 没有helm ，所有部署的时候需要使用yaml 方式
 
 模板：`https://github.com/elastic/cloud-on-k8s/blob/master/config/samples/elasticsearch/elasticsearch.yaml`
@@ -105,15 +162,62 @@ kubectl --namespace elastic-system get pods
 ```
 
 ##  11  访问，验证
+### 11.1 部署kibana
+### 方式一[Elasticsearch is managed by ECK](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana-es.html#k8s-kibana-eck-managed-es)
+模板文件：kibana_es.yaml
+
+```
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: quickstart
+spec:
+  version: 7.10.2
+  count: 1
+  elasticsearchRef:
+    name: quickstart
+    namespace: elastic-system
+```
+
+The use of `namespace` is optional if the Elasticsearch cluster is running in the same namespace as Kibana.
 
 
+**执行命令：**
+
+```
+kubectl apply -f kibana_es.yaml -n elastic-system
+```
+
+### 方式二
+ 模板： `https://github.com/elastic/cloud-on-k8s/blob/master/config/samples/kibana/kibana_es.yaml`
+ 
+```
+kubectl apply -f kibana_es.yaml -n elastic-system
+```
+
+### 11.2 访问
+端口本地暴露：
+
+```
+kubectl port-forward svc/kibana-quickstart-kb-http -n elastic-system 5601:5601
+```
+
+**账号:** elastic
+
+**查看kibana登录密码:**
+ 
+```
+kubectl get secret quickstart-es-elastic-user -n elastic-system -o=jsonpath='{.data.elastic}' | base64 --decode; echo
+```
 
 
+**访问：** `https://localhost:5601/login`
 
 
 ## 参考资料
 - [Elastic cloud on k8s (ECK) 部署](https://github.com/elastic/cloud-on-k8s)
 - [Install ECK using the Helm chart](https://www.elastic.co/guide/en/cloud-on-k8s/1.3/k8s-install-helm.html)
+- [Run Kibana on ECK](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana.html)
 
 
 
