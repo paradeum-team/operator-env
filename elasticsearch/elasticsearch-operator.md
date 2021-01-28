@@ -218,6 +218,5 @@ kubectl get secret quickstart-es-elastic-user -n elastic-system -o=jsonpath='{.d
 - [Elastic cloud on k8s (ECK) 部署](https://github.com/elastic/cloud-on-k8s)
 - [Install ECK using the Helm chart](https://www.elastic.co/guide/en/cloud-on-k8s/1.3/k8s-install-helm.html)
 - [Run Kibana on ECK](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana.html)
-
-
+- [note-eck](https://github.com/ss75710541/openshift-docs/blob/master/logging/openshift3.11%E4%B8%AD%E4%BD%BF%E7%94%A8ECK%E5%AE%89%E8%A3%85filebeat+elasticsearch+kibana%E6%94%B6%E9%9B%86%E6%97%A5%E5%BF%97%E5%88%9D%E6%8E%A2.md)
 
