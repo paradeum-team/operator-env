@@ -266,7 +266,7 @@ kubectl apply -n kafka -f config/samples/simplekafkacluster.yaml
 
 
 
-### 3.3 验证kafka
+## 4 验证kafka
 
 配置 `kafka-cruisecontrol-svc:8090` 或者打通容器和本地的网络[详情](https://github.com/paradeum-team/operator-env/blob/main/docker-k8s-env/macos%20%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAk8s%E7%8E%AF%E5%A2%83.md)
 
@@ -281,12 +281,12 @@ kubectl port-forward svc/kafka-cruisecontrol-svc 8090:8090 -n kafka
 然后访问：`http://localhost:8090/#/` 可以查看kafka的监控状态
 
 
-## 4.卸载
-### 4.1 kafka 应用卸载
+## 5.卸载
+### 5.1 kafka 应用卸载
 ```
 kubectl delete -n kafka -f config/samples/simplekafkacluster.yaml
 ```
-### 4.2  operator 卸载
+### 5.2  operator 卸载
 - helm 方式
 ```
 helm uninstall kafka-operator -n kafka
