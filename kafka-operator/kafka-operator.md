@@ -1,4 +1,4 @@
-# 说明 
+# 部署kafka说明 
 在k8s集群上使用kafka的operator 来安装kafka集群。
 
 欲搭建kafka 环境，需要先搭建kafka的依赖的环境。
@@ -11,14 +11,14 @@
 - zookeeper
 - Prometheus
 
-# install kafka-operator
+## 1、部署kafka-operator方式一(helm)
 
 
 这里也有两种方式安装。
 
-这里kafka的部署，其operator 可以使用helm 方式部署，但是kafka实例却没有对应的helm ，需要按照yaml发布部署，也可以按照zk的操作写一个kafka的helm 部署。
+这里kafka的部署，其operator 可以使用helm 方式部署，但是kafka应用却没有对应的helm ，需要按照yaml发布部署，也可以按照zk的操作写一个kafka的helm 部署。
 
-## 1.1 install with helm (默认配置)
+### 1.1 install with helm (默认配置)
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
 # Using helm3
@@ -31,23 +31,23 @@ kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
 kubectl create -n kafka -f config/samples/kafkacluster-prometheus.yaml
 ```
 
-## 1.2 install with helm(自定义)
+### 1.2 install with helm(自定义)
 使用自定义配置 values.yaml 和离线chart 安装
 
-### 1.2.1 安装 cert-manager & zookeeper
-### 1.2.2 安装kafka-operator对应的crd资源
+#### 1.2.1 安装 cert-manager & zookeeper
+#### 1.2.2 安装kafka-operator对应的crd资源
 ```
 kubectl apply --validate=false -f https://github.com/banzaicloud/kafka-operator/releases/download/v0.12.3/kafka-operator.crds.yaml
 ```
 
-### 1.2.3 添加 repo, 更新repo 信息
+#### 1.2.3 添加 repo, 更新repo 信息
 ```
 helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 helm repo update
 ```
 
 
-### 1.2.4 下载相关镜像到私有仓库
+#### 1.2.4 下载相关镜像到私有仓库
 ```
 https://github.com/banzaicloud/kafka-operator/blob/master/charts/kafka-operator/values.yaml
 ```
@@ -62,13 +62,13 @@ ghcr.io/banzaicloud/cruise-control:2.5.23
 ghcr.io/banzaicloud/kafka:2.13-2.6.0-bzc.1
 ```
 
-### 1.2.4 下载chart
+#### 1.2.4 下载chart
 ```
 helm pull banzaicloud-stable/kafka-operator --version v0.14.0
 
 ```
 
-### 1.2.5 自定义values.yaml
+#### 1.2.5 自定义values.yaml
 todo
 
 ```
@@ -103,7 +103,7 @@ EOF
 
 ```
 
-### 1.2.6 安装
+#### 1.2.6 安装
 - 无证书
 
 ```
@@ -121,42 +121,29 @@ $ helm install kafka-operator --set certManager.namespace=cert-manager --namespa
 helm install kafka-operator kafka-operator-0.4.4.tgz -f kafka-operator-stack-values.yaml -n kafka
 ```
 
-### 1.2.7 更新升级
+#### 1.2.7 更新升级
 
 ```
 helm upgrade kafka-operator --set crd.enabled=true --namespace=kafka registry.hisun.netwarps.com/banzaicloud-stable/kafka-operator
 
 ```
 
-### 1.2.8 卸载
+#### 1.2.8 卸载
 ```
  helm delete  kafka-operator -n kafka
 ```
 
-### 1.2.9 接着部署kafka实例
-由于kafka实例没有对应的helm，所以需要使用yaml 来部署
-
-```
-# Add your zookeeper svc name to the configuration
-kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
-# If prometheus operator installed create the ServiceMonitors
-kubectl create -n kafka -f config/samples/kafkacluster-prometheus.yaml
-```
-
-
-
-
-## 1.3 使用yaml方式
+## 2 部署kafka-operator方式二(yaml) 
 先拉取代码到本地。如：`git clone https://github.com/banzaicloud/kafka-operator.git`
 
 切换目录到 `kafka-operator/config`
 
-### 1.3.1 建立 `kafka`命名空间
+### 2.1 建立 `kafka`命名空间
 ```
 kubectl create namespace kafka
 ```
 
-### 1.3.2 注册定义资源(crd)
+### 2.2 注册定义资源(crd)
 ```
 kubectl apply -f base/crds/kafka.banzaicloud.io_kafkaclusters.yaml 
 kubectl apply -f base/crds/kafka.banzaicloud.io_kafkatopics.yaml 
@@ -164,14 +151,14 @@ kubectl apply -f base/crds/kafka.banzaicloud.io_kafkausers.yaml
 ```
 
 
-### 1.3.3 安装权限控制(rbac)
+### 2.3 安装权限控制(rbac)
 ```
 kubectl apply -f  base/rbac/role.yaml 
 kubectl apply -f  base/rbac/role_binding.yaml 
 kubectl apply -f  base/rbac/leader_election_role.yaml 
 kubectl apply -f  base/rbac/leader_election_role_binding.yaml 
 ```
-### 1.3.4 安装 secret
+### 2.4 安装 secret
 因没有弄清楚 cert-manager 怎么使用，这里建立一个secret。部署需要的tls.crt配置
 
 修改文件 `config/overlays/basic/certificate.yaml`,把其 `namespace：system` 更改成`namespace:kafka`
@@ -185,7 +172,7 @@ kubectl apply -f  base/rbac/leader_election_role_binding.yaml
 
 
 
-### 1.3.5 安装 operator的controller manager
+### 2.5 安装 operator的controller manager
 这里需要注意:
 
 - 把命名空间 system 修改为 kafka
@@ -223,7 +210,7 @@ kubectl apply -f base/manager/manager.yaml
 ```
 
 
-### 1.3.5 安装webhook
+### 2.6 安装webhook
 
 ```
 kubectl apply -f base/alertmanager/service.yaml
@@ -231,7 +218,9 @@ kubectl apply -f base/webhook/manifests.yaml
 kubectl apply -f base/webhook/service.yaml
 ```
 
-### 1.3.6 安装部署 kafka集群
+
+## 3、 部署kafka应用
+### 3.1 安装部署 kafka集群
 
 核对 `config/samples/simplekafkacluster.yaml` 文件，如果zk 安装在 命名空间`zookeeper`下，可以忽略核对
 
@@ -251,7 +240,7 @@ kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
 kubectl create -n default -f config/samples/kafkacluster-prometheus.yaml
 ```
 
-### 1.3.7 kafka集群扩缩
+### 3.2 kafka集群扩缩
 
 修改发布模板 `config/samples/simplekafkacluster.yaml` 修改其中的
 
@@ -272,12 +261,12 @@ brokers:
 **重新发布**
 
 ```
-kubectl create -n kafka -f config/samples/simplekafkacluster.yaml
+kubectl apply -n kafka -f config/samples/simplekafkacluster.yaml
 ```
 
 
 
-### 1.3.8 验证kafka
+### 3.3 验证kafka
 
 配置 `kafka-cruisecontrol-svc:8090` 或者打通容器和本地的网络[详情](https://github.com/paradeum-team/operator-env/blob/main/docker-k8s-env/macos%20%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAk8s%E7%8E%AF%E5%A2%83.md)
 
@@ -290,6 +279,34 @@ kubectl port-forward svc/kafka-cruisecontrol-svc 8090:8090 -n kafka
 ```
 
 然后访问：`http://localhost:8090/#/` 可以查看kafka的监控状态
+
+
+## 4.卸载
+### 4.1 kafka 应用卸载
+```
+kubectl delete -n kafka -f config/samples/simplekafkacluster.yaml
+```
+### 4.2  operator 卸载
+- helm 方式
+```
+helm uninstall kafka-operator -n kafka
+```
+- yaml 方式: (未验证)
+	
+	```
+	kubectl delete -f base/alertmanager/service.yaml -n kafka
+	kubectl delete -f base/webhook/manifests.yaml -n kafka
+	kubectl delete -f base/webhook/service.yaml -n kafka
+	kubectl delete -f base/manager/manager.yaml	 -n kafka
+	kubectl delete -f config/overlays/basic/certificate.yaml -n kafka
+	kubectl delete -f  base/rbac/role.yaml 
+	kubectl delete -f  base/rbac/role_binding.yaml 
+	kubectl delete -f  base/rbac/leader_election_role.yaml 
+	kubectl delete -f  base/rbac/leader_election_role_binding.yaml 
+	kubectl delete -f base/crds/kafka.banzaicloud.io_kafkaclusters.yaml 
+	kubectl delete -f base/crds/kafka.banzaicloud.io_kafkatopics.yaml 
+	kubectl delete -f base/crds/kafka.banzaicloud.io_kafkausers.yaml 
+	```
 
 
 
