@@ -16,7 +16,9 @@ skywalking 部署依赖 elasticSearch部署。 怎么部署es集群，参考对�
 kubectl create namespace apm
 ```
 
-### 1.2、准备jks格式的https 认证。
+### 1.2、准备https的 tls 认证。
+**注意：** 如果es没有开启tls，这里可以略过
+
 - **获取es的 https的证书 :** 从es 的secret 的 `quickstart-es-http-certs-internal` 拷贝出来
 - **转换证书(crt —> pem)：**`openssl x509 -in ca.crt -out ca.pem -outform PEM`
 - **转换证书(pem —> jks):**例如将一个 密码为changeit的ca.pem 格式的证书转换为jks格式的证书，将其命名为es_keystore.jks:
@@ -78,12 +80,6 @@ spec:
   selector:
     matchLabels:
       app: skywalking-oap-server
-  strategy:
-    resources: {}
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
@@ -100,14 +96,14 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: elastic
-                  name: kont-es-elastic-user
+                  name: apm-es-elastic-user
             - name: SW_STORAGE_ES_CLUSTER_NODES
-              value: 'quickstart-es-http.elastic-system.svc:9200'
+              value: 'quickstart-es-http.elastic-system:9200'
             - name: SW_STORAGE_ES_HTTP_PROTOCOL
               value: https
-            - name: SW_SW_STORAGE_ES_SSL_JKS_PATH
+            - name: SW_STORAGE_ES_SSL_JKS_PATH
               value: /skywalking/ext-config/es_keystore.jks
-            - name: SW_SW_STORAGE_ES_SSL_JKS_PASS
+            - name: SW_STORAGE_ES_SSL_JKS_PASS
               value: changeit
             - name: SW_STORAGE_ES_BULK_ACTIONS
               value: '4000'
@@ -121,7 +117,7 @@ spec:
               value: '40'
             - name: JAVA_OPTS
               value: '-Duser.timezone=GMT+8 '
-          image: 'apache/skywalking-oap-server:8.1.0-es7'
+          image: 'apache/skywalking-oap-server:8.3.0-es7'
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
@@ -140,9 +136,6 @@ spec:
             - mountPath: /skywalking/ext-config
               name: cert-ca
               readOnly: true
-            - mountPath: /etc/localtime
-              name: localtime
-              readOnly: true
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -153,13 +146,7 @@ spec:
           secret:
             defaultMode: 420
             secretName: es-jks
-        - hostPath:
-            path: /etc/localtime
-            type: ''
-          name: localtime
-
- ---
-
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -205,11 +192,6 @@ spec:
   selector:
     matchLabels:
       app: skywalking-ui
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
@@ -219,8 +201,8 @@ spec:
       containers:
         - env:
             - name: SW_OAP_ADDRESS
-              value: 'apm-skywalking-apm-server.apm:8200'
-          image: 'apache/skywalking-ui:8.1.0'
+              value: 'skywalking-oap-server.apm:12800'
+          image: 'apache/skywalking-ui:8.3.0'
           imagePullPolicy: IfNotPresent
           name: skywalking-ui
           ports:
@@ -235,7 +217,6 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
- 
 ---
 apiVersion: v1
 kind: Service
@@ -253,7 +234,6 @@ spec:
       targetPort: http
   selector:
     app: skywalking-ui
----
 
 ```
 
@@ -294,13 +274,6 @@ oap:
   image:
     tag: 8.1.0-es7      # Set the right tag according to the existing Elasticsearch version
   storageType: elasticsearch7
-  env:
-  - key: SW_STORAGE_ES_HTTP_PROTOCOL
-    value: https
-  - key: SW_SW_STORAGE_ES_SSL_JKS_PATH
-    value: /skywalking/ext-config/es_keystore.jks
-  - key: SW_SW_STORAGE_ES_SSL_JKS_PASS
-    value: changeit
 
 ui:
   image:
@@ -309,7 +282,7 @@ ui:
 elasticsearch:
   enabled: false
   config:               # For users of an existing elasticsearch cluster,takes effect when `elasticsearch.enabled` is false
-    host: your.elasticsearch.host.or.ip
+    host: your.elasticsearch.host.or.ip #[need replace]
     port:
       http: 9200
     user: "elastic"         # [optional]
@@ -395,6 +368,8 @@ Get the UI URL by running these commands:
   export POD_NAME=$(kubectl get pods --namespace apm -l "app=apm-skywalking,release=apm-skywalking,component=ui" -o jsonpath="{.items[0].metadata.name}")
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl port-forward $POD_NAME 8080:8080 --namespace apm
+  # or 
+  kubectl port-forward svc/skywalking-ui -n apm 8080:8080
 ```
 
 

@@ -116,7 +116,7 @@ spec:
       node.roles: ["data"]
 ```
 
-**模板文件--2 (master-slave 混合)：** elasticsearch.yaml
+**模板文件--2 (master-slave 混合)--默认开启 tls：** elasticsearch.yaml
 
 ```
 apiVersion: elasticsearch.k8s.elastic.co/v1
@@ -135,8 +135,31 @@ spec:
 
 ```
 
+**模板文件--3(master-slave 混合)--关闭 tls：** elasticsearch.yaml
 
-**命令执行:** 这是使用模板2
+```
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: quickstart
+spec:
+  version: 7.10.2
+  http:
+    service:
+      spec:
+        type: LoadBalancer
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  nodeSets:
+  - name: default
+    count: 3
+
+```
+
+
+**命令执行:** 这里使用模板3  或者 2 （**建议模板3**）。
+区别在于，模板3 关闭了tls，模板2在模板3的基数上，开启tls，应用对接es的时候需要 证书。
 
 ```
 kubectl apply -f elasticsearch.yaml -n elastic-system
@@ -214,9 +237,27 @@ kubectl get secret quickstart-es-elastic-user -n elastic-system -o=jsonpath='{.d
 **访问：** `https://localhost:5601/login`
 
 
+## 12、卸载
+### 12.1 卸载kibana
+```
+kubectl delete -f kibana_es.yaml -n elastic-system
+```
+
+### 12.2 卸载 es 应用
+```
+kubectl delete -f elasticsearch.yaml -n elastic-system
+```
+
+### 12.3 卸载 es-operator
+``` 
+helm install elastic-operator  -n elastic-system  
+```
+
 ## 参考资料
 - [Elastic cloud on k8s (ECK) 部署](https://github.com/elastic/cloud-on-k8s)
 - [Install ECK using the Helm chart](https://www.elastic.co/guide/en/cloud-on-k8s/1.3/k8s-install-helm.html)
 - [Run Kibana on ECK](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana.html)
 - [note-eck](https://github.com/ss75710541/openshift-docs/blob/master/logging/openshift3.11%E4%B8%AD%E4%BD%BF%E7%94%A8ECK%E5%AE%89%E8%A3%85filebeat+elasticsearch+kibana%E6%94%B6%E9%9B%86%E6%97%A5%E5%BF%97%E5%88%9D%E6%8E%A2.md)
+- [基于K8s部署ECK(Elastic Cloud on Kubernetes)](https://zhuanlan.zhihu.com/p/105453664)
+- [如何给ElasticSearch设置用户名和密码](https://zhuanlan.zhihu.com/p/163337278)
 
