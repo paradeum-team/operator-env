@@ -13,6 +13,8 @@
 |zookeeper| - | - | - |- |- |
 |kafka| - | - | - |- |- |
 |apollo| - | - | - |- |- |
+|rabbitmq| rabbitmq-1.4.0.tgz | 1.4.0 | [cluster-operator](https://github.com/rabbitmq/cluster-operator) |[链接](https://pnode.solarfs.io/dn/file/288dbb328faf3fc69a92dd77a95af3d6/rabbitmq-1.4.0.tgz) | [doc](https://github.com/paradeum-team/operator-env/blob/main/rabbitmq-operator/Helm%E5%AE%89%E8%A3%85Rabbitmq-Operator.md) |
+|redis| redis-1.0.0.tgz | 1.0.0 | [redis-operator](https://github.com/spotahome/redis-operator) |[链接](https://pnode.solarfs.io/dn/file/1847f6e87e959bee57d12049fe5ef691/redis-1.0.0.tgz) | [doc](https://github.com/paradeum-team/operator-env/blob/main/redis-operator/Helm%E5%AE%89%E8%A3%85Redis-Operator.md) |
 
 
 
