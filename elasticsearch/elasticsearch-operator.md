@@ -250,7 +250,7 @@ kubectl delete -f elasticsearch.yaml -n elastic-system
 
 ### 12.3 卸载 es-operator
 ``` 
-helm install elastic-operator  -n elastic-system  
+helm uninstall elastic-operator  -n elastic-system  
 ```
 
 ## 参考资料
