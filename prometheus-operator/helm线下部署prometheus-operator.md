@@ -28,6 +28,7 @@ https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-promet
 ```
 https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-node-exporter/values.yaml
 ```
 
 
@@ -38,6 +39,7 @@ quay.io/prometheus/alertmanager:v0.21.0
 quay.io/prometheus-operator/prometheus-operator:v0.45.0
 quay.io/prometheus-operator/prometheus-config-reloader:v0.45.0
 quay.io/prometheus/prometheus:v2.24.0
+quay.io/prometheus/node-exporter:v1.0.1
 docker.io/curlimages/curl:7.73.0
 docker.io/library/busybox:1.31.1
 docker.io/kiwigrid/k8s-sidecar:1.1.0
@@ -117,6 +119,9 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
+prometheus-node-exporter:
+  image:
+    repository: ${repository}/prometheus/node-exporter
 EOF
 ```
 
