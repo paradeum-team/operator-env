@@ -23,16 +23,16 @@ kubectl apply -f cert-manager.crds.yaml
 kubectl create namespace cert-manager
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm pull cert-manager jetstack/cert-manager --version=v1.1.0
+helm pull jetstack/cert-manager --version=v1.1.0
 ```
 
 安装 chart
 
 ```
-helm install --name cert --namespace cert-manager jetstack/cert-manager \
-image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-controller \
-webhook.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-webhook \
-cainjector.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-cainjector
+helm install  cert-manager  cert-manager-v1.1.0.tgz -n cert-manager \
+--set image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-controller \
+--set webhook.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-webhook \
+--set cainjector.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-cainjector
 ```
 
 参考：
