@@ -62,7 +62,16 @@ helm pull apollo/apollo-portal
 - [apolloconfigdb.sql](https://github.com/ctripcorp/apollo/blob/master/scripts/sql/apolloconfigdb.sql)
 	
 
+**命令导入：**
 
+```
+# 连接mysql
+$ mysql -h localhost -P 3306 -uroot -proot1234
+
+## 执行导入
+mysql> source ./apolloconfigdb.sql
+
+```
 
 
 ## 5、 Deployments apollo-configservice and apollo-adminservice 
