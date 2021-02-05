@@ -9,6 +9,11 @@ docker.mirrors.ustc.edu.cn/pravega/zookeeper:0.2.9
 docker.mirrors.ustc.edu.cn/tobilg/zookeeper-webui:latest
 ```
 
+## 新建namespace
+```
+kubectl create namespace zookeeper
+```
+
 ## 部署zookeeper-operator
 
 ```
@@ -16,7 +21,7 @@ helm repo add pravega https://charts.pravega.io
 helm repo update
 # 下载最新chart包
 helm pull pravega/zookeeper-operator
-kubectl create namespace zookeeper
+
 helm install pravega zookeeper-operator-0.2.9.tgz -n zookeeper \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper-operator \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl

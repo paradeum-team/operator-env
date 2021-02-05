@@ -17,10 +17,15 @@ wget https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-mana
 kubectl apply -f cert-manager.crds.yaml
 ```
 
-下载 chart
+创建namespace
 
 ```
 kubectl create namespace cert-manager
+```
+
+下载 chart
+
+```
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 helm pull jetstack/cert-manager --version=v1.1.0
