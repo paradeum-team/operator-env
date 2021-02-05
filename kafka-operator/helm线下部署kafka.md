@@ -12,8 +12,8 @@
 - Prometheus
 
 ## 1、环境准备
-- 准备cert-manager环境
-- 搭建好zk环境
+- 准备cert-manager环境: [参考cert-manger部署](../cert-manager/线下安装cert-manager.md)
+- 搭建好zk环境：[参考zk部署](../zookeeper-operator/helm线下部署zookeeper.md)
 
 ## 2、下载离线的chart
 
@@ -122,7 +122,20 @@ helm install kafka-operator kafka-operator-0.4.4.tgz \
 
 
 ### 3.2 修改 发布模板
+**获取zk的svc:**
+
+```
+kubectl get svc -n zookeeper
+
+#
+NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                               AGE
+kafka-zk-zookeeper-client     ClusterIP   10.104.44.154   <none>        2181/TCP                              25m
+
+```
+
 **模板：**`simplekafkacluster.yaml`修改zk 配置
+
+
 
 
 
