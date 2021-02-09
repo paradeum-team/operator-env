@@ -457,8 +457,7 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 
 ## 部署 ECK 日志收集
 
-
-参考：
+参考：[helm线下部署ECK日志收集es禁用tls+收集k8s-pods日志](https://github.com/paradeum-team/operator-env/blob/main/elasticsearch/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2ECK%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86es%E7%A6%81%E7%94%A8tls%2B%E6%94%B6%E9%9B%86k8s%E6%97%A5%E5%BF%97.md)
 
 
 ## 参考： 
