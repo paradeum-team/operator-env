@@ -451,13 +451,15 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 
 参考：[helm线下安装zookeeper-operatoor](https://github.com/paradeum-team/operator-env/blob/main/zookeeper-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2zookeeper.md)
 
-### 部署kafka-operator
+### 部署kafka
 
-暂无
+参考: [helm线下部署kafka-opertor](https://github.com/paradeum-team/operator-env/blob/main/kafka-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2kafka-opertor.md)
 
 ## 部署 ECK 日志收集
 
-暂无
+
+参考：
+
 
 ## 参考： 
 [使用 kubeadm 引导集群](https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/)
