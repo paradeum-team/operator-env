@@ -55,6 +55,56 @@
 	
 	```
 	
+- 持久化三种方式
+
+  - PVC
+		
+		```
+		apiVersion: mysql.presslabs.org/v1alpha1
+		kind: MysqlCluster
+		metadata:
+		  name: my-cluster
+		spec:
+		  replicas: 2
+		  secretName: my-secret
+		  volumeSpec:
+		    persistentVolumeClaim:
+		      accessModes: ["ReadWriteOnce"]
+		      resources:
+		        requests:
+		          storage: 1Gi
+		```
+  		
+  - HostPath
+  
+		```
+		apiVersion: mysql.presslabs.org/v1alpha1
+		kind: MysqlCluster
+		metadata:
+		  name: my-cluster
+		spec:
+		  replicas: 2
+		  secretName: my-secret
+		  volumeSpec:
+		    hostPath:
+		      path: /path/to/host/dir/
+		```
+		
+  - EmptyDir	 
+		
+		```
+		apiVersion: mysql.presslabs.org/v1alpha1
+		kind: MysqlCluster
+		metadata:
+		  name: my-cluster
+		spec:
+		  replicas: 2
+		  secretName: my-secret
+		  volumeSpec:
+		    hostPath:
+		      emptyDir: {}
+		```
+  
 ### 4. 对接prometheus
 
 - pod-monitor.yaml

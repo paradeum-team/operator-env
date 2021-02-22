@@ -81,6 +81,7 @@
 	
 	NAME    	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART         	APP VERSION
 rabbitmq	rabbitmq-system	1       	2021-01-26 11:16:57.504597 +0800 CST	deployed	rabbitmq-0.9.0	3.8.9
+
 	```
 	
 	其他功能性验证和监控验证，参考之前两篇文档。
