@@ -8,6 +8,7 @@
 
   ```
   helm create rabbitmq
+  
   ```
 - [Rabbitmq-Cluster-Operator相关文件](https://github.com/rabbitmq/cluster-operator/tree/main/config)
 - 将Rabbitmq-Cluster-Operator中相关的资源移动到新项目，目录如下：
@@ -32,11 +33,11 @@
 	    └── values.yaml
     
      ```
+     
  - 我将namespace和crd挪至与rabbitmq平级的目录。因为crd属于公共资源，所以我考虑是手动创建rabbitmq-operator的crd，这样的话使用helm uninstall不会删除crd（这个可以看需求）
  - 手动创建namespace，因为我希望rabbitmq这个服务是通过helm部署的，手动创建后可以指定namespace
  
 #### 2.操作步骤
-
 
 - 更改rabbitmq.com_rabbitmqclusters.yaml和deployment.yaml中所需要的镜像，使用内部镜像仓库。
 	
@@ -84,7 +85,7 @@ rabbitmq	rabbitmq-system	1       	2021-01-26 11:16:57.504597 +0800 CST	deployed	
 
 	```
 	
-	其他功能性验证和监控验证，参考之前两篇文档。
+- 其他功能性验证和监控验证，参考之前两篇文档。
 	
 	[Mac-kubernetes-rabbitmq-operator.md](https://github.com/paradeum-team/operator-env/blob/main/rabbitmq-operator/Mac-kubernetes-rabbitmq-operator.md)
 	
