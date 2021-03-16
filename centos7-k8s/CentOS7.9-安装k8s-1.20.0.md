@@ -197,7 +197,8 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ### 重置 kubeadm 安装配置（初始化异常中断重装时使用）
 
 ```
-# kubeadm reset
+rm -rf /etc/kubernetes/pki
+kubeadm reset 
 ```
 
 ## 添加node节点

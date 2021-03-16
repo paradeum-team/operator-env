@@ -140,3 +140,8 @@ $ sudo mv kubectl-cert_manager /usr/local/bin
 ## 参考 
 
 [https://cert-manager.io/docs/installation/kubernetes/](https://cert-manager.io/docs/installation/kubernetes/)
+
+https://cert-manager.io/docs/configuration/ca/
+
+https://www.jetstack.io/blog/securing-mysql-with-cert-manager/
+
