@@ -193,6 +193,28 @@ kubectl apply -f kafka-cruisecontrol-ingress.yaml -n kafka
 访问ui： `http://kafka-cruisecontrol.apps164103.hisun.local/`
 
 
+## 故障处理
+
+### kafka 启动报错
+
+```
+Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer) kafka.common.InconsistentClusterIdException: The Cluster ID kGhqSXdzRCer6Jg5v1ow8g doesn't match stored clusterId Some(l31jTSA8R8aW-lwybxckYg) in meta.properties. The broker is trying to join the wrong cluster. Configured zookeeper.connect may be wrong.
+```
+
+解决方法：
+
+清理 zk 数据重启(因为 zk 是 helm 安装的，删除 sts 会自动重建)
+
+```
+kubectl delete sts kafka-zk-zookeeper -n zookeeper && kubectl delete pvc data-kafka-zk-zookeeper-0 data-kafka-zk-zookeeper-1 data-kafka-zk-zookeeper-2 -n zookeeper
+```
+
+清理 kafka 数据重启(kafka 是 operator 管理，删除 pod 和 svc即可)
+
+```
+kubectl delete pod -l app=kafka -n kafka && kubectl delete pvc -l app=kafka -n kafka
+```
+
 参考：
 
 [https://github.com/paradeum-team/operator-env/blob/main/kafka-operator/kafka-operator.md](https://github.com/paradeum-team/operator-env/blob/main/kafka-operator/kafka-operator.md)
