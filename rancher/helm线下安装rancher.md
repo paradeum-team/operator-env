@@ -62,6 +62,23 @@ kubectl -n cattle-system apply -R -f ./rancher
 
 ### 访问 `https://rancher.apps164103.hisun.k8s`
 
+## 异常处理
+
+### 警告: 组件 controller-manager 不健康
+
+注释下面文件中 `--port=0` 配置
+ 
+```
+/etc/kubernetes/manifests/kube-controller-manager.yaml
+/etc/kubernetes/manifests/kube-scheduler.yaml
+```
+
+重启 kubelet
+
+```
+systemctl restart kubelet
+```
+
 ## 参考 
 
 https://docs.rancher.cn/docs/rancher2/installation_new/other-installation-methods/air-gap/install-rancher/_index
