@@ -10,7 +10,7 @@
 - data 数据下载
 
 	```
-	http://101.36.118.133:5145/dn/file/6b22f3cbfc702bda6abc39fa94c2c3e4/nexus-data.tar.gz > nexus-data.tar.gz
+	http://xxx:5145/dn/file/6b22f3cbfc702bda6abc39fa94c2c3e4/nexus-data.tar.gz > nexus-data.tar.gz
 	
 	```
 
@@ -47,7 +47,7 @@
 - 制作镜像
 	
 	```
-	docker build -t registry.hisun.netwarps.com/library/nexus-init:2.14.9 .
+	docker build -t xxx/library/nexus-init:2.14.9 .
 	
 	```
 	
@@ -119,7 +119,7 @@
 	```
 	initContainers:
     - name: init-volumes
-      image: 'registry.hisun.netwarps.com/library/nexus-init:2.14.9'
+      image: 'xxx/library/nexus-init:2.14.9'
       command:
         - sh
         - ./init_run.sh

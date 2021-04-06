@@ -25,14 +25,14 @@
 - 当前只支持如下服务的sql初始化：activiti_dev、apolloconfigdb、apolloportaldb、base_dev、kont_dev、metadata_dev、xxl_job
 - 如果需要初始化其他服务的sql，重新定制镜像，将sql加入到同级目录即可。
 - 当前可用最新初始化镜像： 
-	- registry.hisun.netwarps.com/library/kont-sqlinit:0.0.7
+	- xxx/library/kont-sqlinit:0.0.7
 
 #### 三、Dockerfile
 
 ```
 FROM centos:7
 COPY mysql /usr/bin/mysql
-RUN  chmod 777 /usr/bin/mysql
+RUN  chmod 777 /usr/bin/mysqlimage
 COPY import.sh .
 COPY *.sql /
 ENTRYPOINT ["./import.sh"]
@@ -130,7 +130,7 @@ fi
 
 #### 五、执行步骤,示例
 
-- docker build -t registry.hisun.netwarps.com/library/kont-sqlinit:0.0.1 .
+- docker build -t xxx/library/kont-sqlinit:0.0.1 .
 
 - run.sh 本地调试，容器内调试
 
@@ -141,7 +141,7 @@ fi
 	-e PASSWORD="Hisun.11"	\
 	-e DATABASE="xxl_job" \
 	-e SQLFILE="xxl_job.sql" \
-	registry.hisun.netwarps.com/library/kont-sqlinit:0.0.4 bash
+	xxx/library/kont-sqlinit:0.0.4 bash
 	
 	```
 

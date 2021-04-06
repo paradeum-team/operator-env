@@ -25,7 +25,7 @@ spec:
         version: v1
     spec:
       containers:
-        - image: 'registry.hisun.netwarps.com/library/nexus:2.14.9'
+        - image: 'xxx/library/nexus:2.14.9'
           imagePullPolicy: IfNotPresent
           name: nexus
           ports:
@@ -42,7 +42,7 @@ spec:
               name: nexus-data
       initContainers:
         - name: init-volumes
-          image: registry.hisun.netwarps.com/library/nexus-init:2.14.9
+          image: xxx/library/nexus-init:2.14.9
           command:
             - sh
             - ./init_run.sh

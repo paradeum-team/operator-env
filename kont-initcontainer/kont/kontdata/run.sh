@@ -4,4 +4,4 @@ docker run -it \
 	-e PASSWORD="Hisun.11"	\
 	-e DATABASE="xxl_job" \
 	-e SQLFILE="xxl_job.sql" \
-	registry.hisun.netwarps.com/library/kont-sqlinit:0.0.4 bash
+	xxx/library/kont-sqlinit:0.0.4 bash

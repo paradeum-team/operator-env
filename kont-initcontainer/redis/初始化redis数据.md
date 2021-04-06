@@ -5,7 +5,7 @@
 - kont服务是通过API方式进行redis数据初始化
 - 我们通过curl命令的方式进行api请求，所以需要制作一个基础镜像。
 - 基础镜像为： 
-	- registry.hisun.netwarps.com/library/kont-curl:0.0.1
+	- xxx/library/kont-curl:0.0.1
 
 #### 二、Dockerfile
 
@@ -16,14 +16,14 @@ RUN apk add --update curl && rm -rf /var/cache/apk/*
 
 ```
 
-- docker build -t registry.hisun.netwarps.com/library/kont-curl:0.0.1 .
+- docker build -t xxx/library/kont-curl:0.0.1 .
 
 #### 三、在kont-meta服务中初始化redis
 
 ```
 initContainers:
   - name: init-redis
-	 image: 'registry.hisun.netwarps.com/library/kont-curl:0.0.1'
+	 image: 'xxx/library/kont-curl:0.0.1'
 	 command:
 	   - sh
 	   - '-c'
