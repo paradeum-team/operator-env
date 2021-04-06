@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus-ingress
+  namespace: nexus
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: nexus.apps164103.hisun.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nexus
+            port:
+              number: 8081
