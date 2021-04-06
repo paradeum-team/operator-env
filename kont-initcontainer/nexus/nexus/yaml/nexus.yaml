@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nexus
+  name: nexus
+  namespace: nexus
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nexus
+      version: v1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nexus
+        version: v1
+    spec:
+      containers:
+        - image: 'xxx/library/nexus:2.14.9'
+          imagePullPolicy: IfNotPresent
+          name: nexus
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities: {}
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /sonatype-work 
+              name: nexus-data
+      initContainers:
+        - name: init-volumes
+          image: xxx/library/nexus-init:2.14.9
+          command:
+            - sh
+            - ./init_run.sh
+          volumeMounts:
+            - name: nexus-data
+              mountPath: "/nexus-data"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus
+      
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nexus
+    service: nexus
+  name: nexus
+  namespace: nexus
+spec:
+  ports:
+    - name: http
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: nexus
+  sessionAffinity: None
+  type: ClusterIP
