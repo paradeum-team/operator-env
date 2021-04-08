@@ -19,7 +19,8 @@
 	```	
 	 kubectl create namespace mysql-system
 	
-	```	
+	```
+	
 - 部署operator
 
 	```
@@ -42,6 +43,7 @@
 	  ROOT_PASSWORD: MTIzNDU2
 	
 	```
+	
 - cluster-mysql.yaml
 
 	```
@@ -58,52 +60,53 @@
 - 持久化三种方式
 
   - PVC
-		
-		```
-		apiVersion: mysql.presslabs.org/v1alpha1
-		kind: MysqlCluster
-		metadata:
-		  name: my-cluster
-		spec:
-		  replicas: 2
-		  secretName: my-secret
-		  volumeSpec:
-		    persistentVolumeClaim:
-		      accessModes: ["ReadWriteOnce"]
-		      resources:
-		        requests:
-		          storage: 1Gi
-		```
+  
+	```
+    apiVersion: mysql.presslabs.org/v1alpha1
+    kind: MysqlCluster
+    metadata:
+      name: my-cluster
+    spec:
+      replicas: 2
+      secretName: my-secret
+      volumeSpec:
+        persistentVolumeClaim:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+	```
   		
   - HostPath
   
-		```
-		apiVersion: mysql.presslabs.org/v1alpha1
-		kind: MysqlCluster
-		metadata:
-		  name: my-cluster
-		spec:
-		  replicas: 2
-		  secretName: my-secret
-		  volumeSpec:
-		    hostPath:
-		      path: /path/to/host/dir/
-		```
+    ```
+    apiVersion: mysql.presslabs.org/v1alpha1
+    kind: MysqlCluster
+    metadata:
+      name: my-cluster
+    spec:
+      replicas: 2
+      secretName: my-secret
+      volumeSpec:
+        hostPath:
+          path: /path/to/host/dir/
+    ```
+		
 		
   - EmptyDir	 
 		
-		```
-		apiVersion: mysql.presslabs.org/v1alpha1
-		kind: MysqlCluster
-		metadata:
-		  name: my-cluster
-		spec:
-		  replicas: 2
-		  secretName: my-secret
-		  volumeSpec:
-		    hostPath:
-		      emptyDir: {}
-		```
+	```
+    apiVersion: mysql.presslabs.org/v1alpha1
+    kind: MysqlCluster
+    metadata:
+      name: my-cluster
+    spec:
+      replicas: 2
+      secretName: my-secret
+      volumeSpec:
+        hostPath:
+          emptyDir: {}
+	```
   
 ### 4. 对接prometheus
 
@@ -125,7 +128,7 @@
 	      app.kubernetes.io/component: database
 	  namespaceSelector:
 	    any: true
-	```	
+	```
 	
 ### 5. 下载msyql的监控模板，在grafana中创建
 
