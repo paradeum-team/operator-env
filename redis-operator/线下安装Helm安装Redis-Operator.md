@@ -10,8 +10,8 @@
 	tar -zxvf redis-operator-1.0.0.tgz
 	```
 	
-	修改value.yaml,把镜像推到内部镜像仓库，默认推到了registry.hisun.netwarps.com
-
+	修改values.yaml,把镜像推到内部镜像仓库，默认推到了registry.hisun.netwarps.com
+        修改values.yaml,rbac的install为true，否则部署会出现权限问题
 	
 ### 2. helm部署redis-operator
 
