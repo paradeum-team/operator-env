@@ -112,6 +112,7 @@
   
 ### 4. 对接prometheus
 
+对接prometheus前请先确认k8s环境是否部署了prometheus，[参看部署文档](https://github.com/paradeum-team/operator-env/blob/main/prometheus-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2prometheus-operator.md)
 - pod-monitor.yaml
 	
 	```
