@@ -27,6 +27,7 @@
 	helm install mysql-operator mysql-operator -n mysql-system
 	
 	```
+   
 	
 ### 3. 部署mysql服务	
 
@@ -56,6 +57,7 @@
 	  secretName: mysql-secret
 	
 	```
+使用 kubectl apply -f xxx.yaml进行部署
 	
 - 持久化三种方式
 
