@@ -1,7 +1,7 @@
 # 使用helm 部署skywalking
 
 ## 1、基础配置
-skywalking 部署依赖 elasticSearch部署。 怎么部署es集群，参考对应文档
+skywalking 部署依赖 elasticSearch部署。 怎么部署es集群，参考[对应文档](https://github.com/paradeum-team/operator-env/blob/main/elasticsearch/helm%20%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85elasticsearch.md)
 
 现在把 es的相关配置需要重建：
 
