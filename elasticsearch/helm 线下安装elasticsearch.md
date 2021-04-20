@@ -122,10 +122,12 @@ spec:
 
 **命令执行:** 这里使用模板3  或者 2 （**建议模板3**）。
 区别在于，模板3 关闭了tls，模板2在模板3的基数上，开启tls，应用对接es的时候需要 证书。
-部署应用前需要确认master是否可调度，k8s集群安装好后，master默认是不可调度的，需要执行以下命令，使master可调度   
+部署应用前需要确认master是否可调度，k8s集群安装好后，master默认是不可调度的   
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
+需要执行以上命令，使master可调度
+
 
 ```
 kubectl apply -f elasticsearch.yaml -n elastic-system
