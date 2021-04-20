@@ -81,7 +81,6 @@ helm repo update
 ### 3.3 安装repo
 ```
 cd skywalking-kubernetes/chart
-helm repo add elastic https://helm.elastic.co
 helm dep up skywalking
 ```
 
