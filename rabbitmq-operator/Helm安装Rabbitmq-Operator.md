@@ -66,7 +66,6 @@
 - helm 安装rabbitmq-operator
 
  ```
- cd demo
  
  helm install rabbitmq ./rabbitmq -n rabbitmq-system
 
