@@ -12,7 +12,7 @@
   ```
 - [Rabbitmq-Cluster-Operator相关文件](https://github.com/rabbitmq/cluster-operator/tree/main/config)
 
-[文件下载](https://pnode.solarfs.io/dn/file/288dbb328faf3fc69a92dd77a95af3d6/rabbitmq-1.4.0.tgz)
+   [rabbitmq文件下载](https://pnode.solarfs.io/dn/file/288dbb328faf3fc69a92dd77a95af3d6/rabbitmq-1.4.0.tgz)
 
 - 将Rabbitmq-Cluster-Operator中相关的资源移动到新项目，目录如下：
 
