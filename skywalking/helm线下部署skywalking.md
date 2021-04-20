@@ -75,12 +75,11 @@ helm repo update
 ```
 
 ### 3.2 下载仓库
- `git clone https://github.com/apache/skywalking-kubernetes ?`
+ `git clone https://github.com/apache/skywalking-kubernetes ?`   
  `git clone git@github.com:apache/skywalking-kubernetes.git`
 
 ### 3.3 安装repo
 ```
-git clone git@github.com:apache/skywalking-kubernetes.git
 cd skywalking-kubernetes/chart
 helm repo add elastic https://helm.elastic.co
 helm dep up skywalking
