@@ -215,7 +215,7 @@ spec:
 ```
 kubectl apply -f kibana-ingress.yaml
 ```
-部署机器及宿主机域名解析后，访问`https:kibana.hisun.local`
+部署机器及宿主机域名解析后，访问`https://kibana.hisun.local/login`
 
 ## 9、卸载
 ### 9.1 卸载kibana
