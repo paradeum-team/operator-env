@@ -170,6 +170,7 @@ kubectl apply -f kibana_es.yaml -n elastic-system
 
 
 ### 8.2 访问
+#### 8.2.1 本机部署访问   
 端口本地暴露：
 
 ```
@@ -185,8 +186,36 @@ kubectl get secret es-base-es-elastic-user -n elastic-system -o=jsonpath='{.data
 ```
 
 
-**访问：** `https://localhost:5601/login`
-
+**访问：** `https://localhost:5601/login`   
+#### 8.2.2 非本机部署访问  
+编辑kibana-ingress.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  namespace: elastic-system  #need to check
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  rules:
+  - host: kibana.hisun.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kapp-kb-http #根据实际部署kibana的服务名称修改
+            port:
+              number: 5601
+```
+执行kibana ingress部署  
+```
+kubectl apply -f kibana-ingress.yaml
+```
+部署机器及宿主机域名解析后，访问`https:kibana.hisun.local`
 
 ## 9、卸载
 ### 9.1 卸载kibana
