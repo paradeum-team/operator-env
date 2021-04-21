@@ -134,8 +134,9 @@ helm install apm-skywalking skywalking -n apm -f skywalking-oap-server.yaml
 ```
 kubectl get pods --namespace=apm  -w
 ```
-
-### 5.2 访问，验证
+ 
+### 5.2 访问，验证   
+#### 5.2.1 本机部署访问
 访问 ui： 8080端口暴露: `http://localhost:8080`
 
 ```
@@ -145,8 +146,36 @@ Get the UI URL by running these commands:
   kubectl port-forward $POD_NAME 8080:8080 --namespace apm
   # or 
   kubectl port-forward svc/apm-skywalking-ui -n apm 8080:80
+```  
+#### 5.2.2 非本机部署访问  
+编辑skywalking-ingress.yaml  
 ```
-
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: skywalking-ui-ingress
+  namespace: apm   #need to check
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  rules:
+  - host: skywalking.hisun.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: apm-skywalking-ui  #need  to check
+            port:
+              number: 8080
+```
+执行skywalking ingress部署    
+```
+kubectl  apply -f skywalking-ingress.yaml
+```  
+部署机器及宿主机域名解析后，访问https://skywalking.hisun.local
 
 ## 参考资料
 - [elastic-apm](https://github.com/elastic/apm)
