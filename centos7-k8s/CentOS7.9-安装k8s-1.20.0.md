@@ -106,36 +106,36 @@ systemctl daemon-reload
 systemctl enable --now kubelet # （如果启动失败无需管理，初始化成功以后即可启动）
 ```
 
-## 操作系统简单初始化
-
-### 关闭swap(阿里云centos7.9 不需要执行)
-
-```
-swapoff -a && sysctl -w vm.swappiness=0
-sed -ri '/^[^#]*swap/s@^@#@' /etc/fstab
-```
-
-### 加载 br_netfilter 模块，设置必要sysctl 参数
-
-```
-sudo modprobe br_netfilter
-
-# 设置必需的 sysctl 参数，这些参数在重新启动后仍然存在。
-cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-
-# Apply sysctl params without reboot
-sudo sysctl --system
-```
-
-### 重启系统
-
-```
-reboot
-```
+	## 操作系统简单初始化
+	
+	### 关闭swap(阿里云centos7.9 不需要执行)
+	
+	```
+	swapoff -a && sysctl -w vm.swappiness=0
+	sed -ri '/^[^#]*swap/s@^@#@' /etc/fstab
+	```
+	
+	### 加载 br_netfilter 模块，设置必要sysctl 参数
+	
+	```
+	sudo modprobe br_netfilter
+	
+	# 设置必需的 sysctl 参数，这些参数在重新启动后仍然存在。
+	cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+	net.bridge.bridge-nf-call-iptables  = 1
+	net.ipv4.ip_forward                 = 1
+	net.bridge.bridge-nf-call-ip6tables = 1
+	EOF
+	
+	# Apply sysctl params without reboot
+	sudo sysctl --system
+	```
+	
+	### 重启系统
+	
+	```
+	reboot
+	```
 
 ## 初始化控制平面节点
 
@@ -275,15 +275,13 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 
 ```
 wget https://get.helm.sh/helm-v3.5.0-linux-amd64.tar.gz
-tar xzvf helm-v3.5.0-linux-amd64.tarmv
+tar xzvf helm-v3.5.0-linux-amd64.tar.gz
 mv linux-amd64/helm /usr/local/bin/helm
 ```
 
 ## 安装ingress-nginx
 
 ### 使用helm安装
-
-
 
 ```
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx

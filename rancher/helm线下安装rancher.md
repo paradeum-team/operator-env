@@ -31,17 +31,20 @@ helm fetch rancher-stable/rancher
 
 生成发布文件
 
+注意：这里replicas 设置为1，是为了高可用 k8s 1.21.0 环境连接不上命令行修改的，如果不需要连接命令行，可以按默认设置3
+
 ```
 helm template rancher ./rancher-2.5.7.tgz --output-dir . \
 --namespace cattle-system \
---set hostname=rancher.apps164103.hisun.k8s \
---set certmanager.version=v1.1.0 \
+--set hostname=rancher.apps181227.hisun.k8s \
+--set certmanager.version=v1.3.1 \
 --set rancherImage=registry.hisun.netwarps.com/rancher/rancher \
 --set systemDefaultRegistry=registry.hisun.netwarps.com \
+--set replicas=1 \
 --set useBundledSystemChart=true
 ```
 
-因为当前环境安装的 cert-manager 为 v1.1.0, 所以需要修改 `issuer-rancher.yaml` 中 `apiVersion`
+因为当前环境安装的 cert-manager 为 v1.3.1, 所以需要修改 `issuer-rancher.yaml` 中 `apiVersion`
 
 ```
 sed -i 's#apiVersion:.*#apiVersion: cert-manager.io/v1#g' rancher/templates/issuer-rancher.yaml
@@ -79,6 +82,23 @@ kubectl -n cattle-system apply -R -f ./rancher
 systemctl restart kubelet
 ```
 
+### web 页面不能进入 kubectl 命令行
+
+查看 rancher 日志报错
+
+```
+2021/04/21 08:30:17 [ERROR] Failed to connect to peer wss://10.128.3.53/v3/connect [local ID=10.128.4.36]: websocket: bad handshake
+2021/04/21 08:30:17 [ERROR] Failed to connect to peer wss://10.128.5.44/v3/connect [local ID=10.128.4.36]: websocket: bad handshake
+2021/04/21 08:30:22 [ERROR] Failed to connect to peer wss://10.128.3.53/v3/connect [local ID=10.128.4.36]: websocket: bad handshake
+2021/04/21 08:30:22 [ERROR] Failed to connect to peer wss://10.128.5.44/v3/connect [local ID=10.128.4.36]: websocket: bad handshake
+```
+
+所以在 helm 安装时修改副本数为1
+
+···
+--set replicas=1 \
+···
+
 ## 参考 
 
-https://docs.rancher.cn/docs/rancher2/installation_new/other-installation-methods/air-gap/install-rancher/_index
+https://docs.rancher.cn/docs/rancher2.5/installation/install-rancher-on-k8s/_index

@@ -3,9 +3,9 @@
 ## 下载镜像推送到私有仓库
 
 ```
-quay.io/jetstack/cert-manager-cainjector:v1.1.0
-quay.io/jetstack/cert-manager-controller:v1.1.0
-quay.io/jetstack/cert-manager-webhook:v1.1.0
+quay.io/jetstack/cert-manager-cainjector:v1.3.1
+quay.io/jetstack/cert-manager-controller:v1.3.1
+quay.io/jetstack/cert-manager-webhook:v1.3.1
 ```
 
 ## 使用helm 方式安装cert-manager
@@ -13,7 +13,7 @@ quay.io/jetstack/cert-manager-webhook:v1.1.0
 在安装chart之前，必须先安装cert-manager CustomResourceDefinition资源。这是在一个单独的步骤中执行的，允许您轻松卸载和重新安装cert-manager，而不需要删除已安装的自定义资源。
 
 ```
-wget https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.crds.yaml
+wget https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.crds.yaml
 kubectl apply -f cert-manager.crds.yaml
 ```
 
@@ -28,13 +28,13 @@ kubectl create namespace cert-manager
 ```
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm pull jetstack/cert-manager --version=v1.1.0
+helm pull jetstack/cert-manager --version=v1.3.1
 ```
 
 安装 chart
 
 ```
-helm install  cert-manager  cert-manager-v1.1.0.tgz -n cert-manager \
+helm install  cert-manager  cert-manager-v1.3.1.tgz -n cert-manager \
 --set image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-controller \
 --set webhook.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-webhook \
 --set cainjector.image.repository=registry.hisun.netwarps.com/jetstack/cert-manager-cainjector
@@ -44,13 +44,13 @@ helm install  cert-manager  cert-manager-v1.1.0.tgz -n cert-manager \
 
 https://cert-manager.io/docs/installation/kubernetes/#
 
-https://artifacthub.io/packages/helm/jetstack/cert-manager
+https://artifacthub.io/packages/helm/wener/cert-manager
 
 ## 使用yaml方式安装cert-manager
 ### 下载部署yaml
 
 ```
-wget https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.yaml
+wget https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
 ```
 
 ### 改image 源
@@ -108,6 +108,15 @@ EOF
 kubectl apply -f test-resources.yaml
 ```
 
+刚安装完cert-manager 执行验证test-resources 报错
+
+```
+Error from server (InternalError): error when creating "test-resources.yaml": Internal error occurred: failed calling webhook "webhook.cert-manager.io": Post "https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s": x509: certificate has expired or is not yet valid: current time 2021-04-20T11:09:21Z is before 2021-04-20T14:45:51Z
+Error from server (InternalError): error when creating "test-resources.yaml": Internal error occurred: failed calling webhook "webhook.cert-manager.io": Post "https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s": x509: certificate has expired or is not yet valid: current time 2021-04-20T11:09:21Z is before 2021-04-20T14:45:51Z
+```
+
+因为本地时区是上海时区，跟 cert-manager-webhook 时区默认为美国时区，有时差，所以当前时间在 证书生效前，导致证书验证失败，暂时没找到好的解决方法，等几个小时后证书生效再访问
+
 ### 检查新创建的证书的状态。在cert-manager处理证书请求之前，您可能需要等待几秒钟。
 
 ```
@@ -129,12 +138,30 @@ Events:
 kubectl delete -f test-resources.yaml
 ```
 
+### 创建集群自重命名 Issuer
+
+```
+cat>selfsigned-issuer.yaml<<EOF
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  namespace: cert-manager
+spec:
+  selfSigned: {}
+EOF
+```
+
+```
+kubectl apply -f selfsigned-issuer.yaml
+```
+
 ## 安装kubectl cert-manager 插件
 
 ```
-curl -L -o kubectl-cert-manager.tar.gz https://github.com/jetstack/cert-manager/releases/download/v1.1.0/kubectl-cert_manager-linux-amd64.tar.gz
-tar xzf kubectl-cert-manager.tar.gz
-$ sudo mv kubectl-cert_manager /usr/local/bin
+curl -L -o kubectl-cert-manager.v1.3.1.tar.gz https://github.com/jetstack/cert-manager/releases/download/v1.3.1/kubectl-cert_manager-linux-amd64.tar.gz
+tar xzf kubectl-cert-manager.v1.3.1.tar.gz
+sudo mv kubectl-cert_manager /usr/local/bin
 ```
 
 ## 参考 
