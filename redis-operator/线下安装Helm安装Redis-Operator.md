@@ -57,6 +57,9 @@
                 requests:
                   storage: 1Gi	
 	```
+	```
+	kubectl apply -f enable-exporter.yaml -n redis-system
+	```
 	
 ### 4. 对接prometheus
 
@@ -79,6 +82,9 @@
       namespaceSelector:
         any: true
 	
+	```
+	```
+	kubectl apply -f pod-monitor.yaml -n redis-system
 	```
 	
 ### 5. 下载redis的监控模板，在grafana中创建
