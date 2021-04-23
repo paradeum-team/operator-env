@@ -26,36 +26,49 @@
 	helm install redis-operator redisoperator -n redis-system
 	```
 	
-### 3. 部署redis服务	
+### 3. 部署redis服务   
+- secret.yaml  
+```
+kind: Secret
+apiVersion: v1
+metadata:
+  name: redis-auth
+  namespace: redis-system
+data:
+  password: cnMxMjM=
+type: Opaque
+```
 
 - enable-exporter.yaml 
 
 	```
 	apiVersion: databases.spotahome.com/v1
-    kind: RedisFailover
-    metadata:
-      name: redisfailover
-    spec:
-      sentinel:
-        replicas: 3
-        exporter:
-          enabled: true
-          image: registry.hisun.netwarps.com/leominov/redis_sentinel_exporter:1.3.0
-      redis:
-        replicas: 3
-        exporter:
-          enabled: true
-          iimage: registry.hisun.netwarps.com/oliver006/redis_exporter:v1.3.5-alpine
-        storage:
-          persistentVolumeClaim:
-            metadata:
-              name: redisfailover-persistent-data
-            spec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 1Gi	
+kind: RedisFailover
+metadata:
+  name: redisfailover
+spec:
+  sentinel:
+    replicas: 3
+    exporter:
+      enabled: true
+      image: registry.hisun.netwarps.com/leominov/redis_sentinel_exporter:1.3.0
+  redis:
+    replicas: 3
+    exporter: 
+      enabled: true
+      iimage: registry.hisun.netwarps.com/oliver006/redis_exporter:v1.3.5-alpine
+    storage:
+      persistentVolumeClaim:
+        metadata:
+          name: redisfailover-persistent-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  auth:
+    secretPath: redis-auth
 	```
 	```
 	kubectl apply -f enable-exporter.yaml -n redis-system
