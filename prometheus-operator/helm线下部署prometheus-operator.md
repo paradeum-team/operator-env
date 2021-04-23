@@ -73,6 +73,7 @@ alertmanager:
   alertmanagerSpec:
     image:
       repository: ${repository}/prometheus/alertmanager
+    replicas: 1
     storage:
       volumeClaimTemplate:
         spec:
@@ -85,6 +86,7 @@ grafana:
   ingress:
     enabled: true
     hosts: ["grafana.${domain}"]
+  replicas: 1
   image:
     repository: ${repository}/grafana/grafana
   initChownData:
@@ -109,6 +111,7 @@ prometheus:
     enabled: true
     hosts: ["prometheus.${domain}"]
   prometheusSpec:
+    replicas: 1
     image:
       repository: ${repository}/prometheus/prometheus
     storageSpec:
