@@ -66,7 +66,7 @@ cd skywalking-kubernetes/chart
 tar -cvf skywalking-v4.0.0.tgz skywalking
 ```
 
-## 3、部署方式二：使用helm 的skywalking 安装
+## 3、使用helm 的skywalking 安装
 ### 3.1 添加repo，更新repo
 ```
 helm repo add elastic https://helm.elastic.co
