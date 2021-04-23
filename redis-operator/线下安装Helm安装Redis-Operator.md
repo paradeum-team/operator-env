@@ -42,7 +42,7 @@ type: Opaque
 - enable-exporter.yaml 
 
 ```
-	apiVersion: databases.spotahome.com/v1
+apiVersion: databases.spotahome.com/v1
 kind: RedisFailover
 metadata:
   name: redisfailover
