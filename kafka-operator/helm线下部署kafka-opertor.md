@@ -2,11 +2,11 @@
 
 ## 部署 cert-manager
 
-参考：[线下安装cert-manager](https://github.com/paradeum-team/operator-env/blob/main/cert-manager/%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85cert-manager.md)
+参考：[线下安装cert-manager](../cert-manager/%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85cert-manager.md)
 
 ## 部署 zookeeper
 
-参考：[helm线下安装zookeeper-operatoor](https://github.com/paradeum-team/operator-env/blob/main/zookeeper-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2zookeeper.md)
+参考：[helm线下安装zookeeper-operatoor](../zookeeper-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2zookeeper.md)
 
 ## 部署kafka
 

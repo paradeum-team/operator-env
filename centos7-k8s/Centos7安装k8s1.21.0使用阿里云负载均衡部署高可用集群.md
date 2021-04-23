@@ -773,101 +773,59 @@ kubectl -n ingress exec -it $POD_NAME -- /nginx-ingress-controller --version
 
 ## 安装dashboard
 
-```
-wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
-```
+参考：[k8s-1.21安装dashboard](./k8s-1.21安装dashboard.md)
 
-修改recommended.yaml 中镜像地址为私有仓库地址
+## 安装 rancher
 
-```
-kubectl apply -f recommended.yaml
-```
+参考：[helm线下安装rancher](../rancher/helm线下安装rancher.md)
 
-### 创建简单用户
+## 安装 local-path-provisioner(local path storage class)
 
-创建 service account 
+适用场景：
 
-```
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-```
+- 磁盘性能要求中高
+- 允许其它服务抢占io资源
+- 不限制挂载磁盘空间大小
+- pod 固定节点
+- 单 pod 读写
 
-创建 ClusterRoleBinding
-
-```
-cat <<EOF | kubectl apply -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-```
-
-创建 ingress (这里没有使用cert-manager自动管理证书)
-
-```
-cat <<EOF > dashboard-ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: dashboard-ingress
-  namespace: kubernetes-dashboard
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-spec:
-  rules:
-  - host: k8s-dashboard.apps181227.hisun.k8s
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: kubernetes-dashboard
-            port:
-              number: 8443
-EOF
-
-kubectl apply -f dashboard-ingress.yaml
-```
-
-获取 Bearer Token
-
-```
-kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
-```
-
-客户端配置解析 k8s-dashboard.apps181227.hisun.k8s 到负载均衡外网 IP
-
-访问 
-
-```
-https://k8s-dashboard.apps181227.hisun.k8s
-```
-
-## 安装 local-path-provisioner
 
 参考: [安装local-path-provisioner.md](../storage/安装local-path-provisioner.md)
 
-## 安装 nfs-subdir-external-provisioner
+## 安装 nfs-subdir-external-provisioner(nfs storage class)
+
+适用场景：
+
+- 磁盘性能要求中低
+- 允许其它服务抢占io资源
+- 不限制挂载磁盘空间大小
+- pod 不固定节点
+- 多 pod 同时读写
+
+
+**注意：发布的服务磁盘性能需求低，且不固定节点，使用  nfs3-client **
 
 参考: [k8s1.20使用helm部署nfs-subdir-external-provisioner对接阿里云NAS-NFS](../storage/k8s1.20使用helm部署nfs-subdir-external-provisioner对接阿里云NAS-NFS.md)
 
+## 安装 sig-storage-local-static-provisioner(local volume storage class)
+
+适用场景：
+
+- 磁盘性能要求高
+- 不允许其它服务抢占io资源
+- 限制挂载磁盘空间大小
+- pod 固定节点
+- 单 pod 读写
+
+参考: [k8s-1.21配置local-volume](../storage/k8s-1.21配置local-volume.md)
+
 ## 部署 prometheus-operator
+
+**安装注意：因磁盘性能要求不同，需要修改 storageclass**
+
+- alertmanager 使用 nfs3-client
+- grafana 使用 nfs3-client
+- prometheus 使用 local-volume
 
 参考： [helm线下部署prometheus-operator](../prometheus-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2prometheus-operator.md)
 
@@ -875,19 +833,31 @@ https://k8s-dashboard.apps181227.hisun.k8s
 
 ### 部署 cert-manager
 
-参考：[线下安装cert-manager](https://github.com/paradeum-team/operator-env/blob/main/cert-manager/%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85cert-manager.md)
+参考：[线下安装cert-manager](../cert-manager/%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85cert-manager.md)
 
 ### 部署 zookeeper
 
-参考：[helm线下安装zookeeper-operatoor](https://github.com/paradeum-team/operator-env/blob/main/zookeeper-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2zookeeper.md)
+**安装注意：因磁盘性能要求不同，需要修改 storageclass**
+
+- zookeeper 使用 local-path
+
+参考：[helm线下安装zookeeper-operator](../zookeeper-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2zookeeper.md)
 
 ### 部署kafka
 
-参考: [helm线下部署kafka-opertor](https://github.com/paradeum-team/operator-env/blob/main/kafka-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2kafka-opertor.md)
+**安装注意：因磁盘性能要求不同，需要修改 kafka storageclass**
+
+- kafka 使用 local-volume
+
+参考: [helm线下部署kafka-opertor](../kafka-operator/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2kafka-opertor.md)
 
 ## 部署 ECK 日志收集
 
-参考：[helm线下部署ECK日志收集es禁用tls+收集k8s-pods日志](https://github.com/paradeum-team/operator-env/blob/main/elasticsearch/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2ECK%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86es%E7%A6%81%E7%94%A8tls%2B%E6%94%B6%E9%9B%86k8s%E6%97%A5%E5%BF%97.md)
+**安装注意：因磁盘性能要求不同，需要修改 storageclass**
+
+- elasticsearch 使用 local-volume
+
+参考：[helm线下部署ECK日志收集es禁用tls+收集k8s-pods日志](../elasticsearch/helm%E7%BA%BF%E4%B8%8B%E9%83%A8%E7%BD%B2ECK%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86es%E7%A6%81%E7%94%A8tls%2B%E6%94%B6%E9%9B%86k8s%E6%97%A5%E5%BF%97.md)
 
 ## 参考
 [CentOS7.9-安装k8s-1.20.2](https://github.com/paradeum-team/operator-env/blob/main/centos7-k8s/CentOS7.9-%E5%AE%89%E8%A3%85k8s-1.20.0.md)

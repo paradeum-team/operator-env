@@ -1,14 +1,5 @@
 # 线下部署 helm chart 仓库 chartmuseum
 
-参考：
-
-https://artifacthub.io/packages/helm/chartmuseum/chartmuseum
-
-https://github.com/helm/chartmuseum
-
-https://github.com/chartmuseum/charts/tree/main/src/chartmuseum
-
-
 ## 下载镜像到私有仓库
 
 ```
@@ -31,6 +22,8 @@ kubectl create namespace chartmuseum
 kubectl create secret generic chartmuseum-secret --from-literal="basic-auth-user=admin" --from-literal="basic-auth-pass=12345678" -n chartmuseum
 ```
 
+创建 自定义 values.yaml
+
 ```
 cat>values.yaml<<EOF
 image:
@@ -50,7 +43,7 @@ persistence:
   accessMode: ReadWriteMany
   size: 8Gi
   storageClass: nfs3-client
-replicaCount: 2
+replicaCount: 1
 ingress:
   enabled: true
   annotations:
@@ -67,7 +60,7 @@ EOF
 helm install chartmuseum  -f values.yaml -n chartmuseum chartmuseum-3.1.0.tgz
 ```
 
-## 默认 禁用了 chartmuseum api操作安装 helm-push 插件
+## 安装 helm-push 插件
 
 ```
 wget https://github.com/chartmuseum/helm-push/releases/download/v0.9.0/helm-push_0.9.0_linux_amd64.tar.gz
@@ -105,3 +98,17 @@ helm repo add  chartmuseum-hisun https://charts.apps181227.hisun.k8s --username 
 ```
 helm push chartmuseum-3.1.0.tgz chartmuseum-hisun
 ```
+
+chartmuseum-hisun 仓库删除 chart 
+
+```
+curl --user admin:12345678 -X DELETE   http://chartmuseum.chartmuseum.svc:8080/api/charts/provisioner/2.4.0
+```
+
+## 参考：
+
+https://artifacthub.io/packages/helm/chartmuseum/chartmuseum
+
+https://github.com/helm/chartmuseum
+
+https://github.com/chartmuseum/charts/tree/main/src/chartmuseum
