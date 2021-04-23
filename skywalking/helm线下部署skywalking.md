@@ -171,7 +171,7 @@ spec:
 ```
 执行skywalking ingress部署    
 ```
-kubectl  apply -f skywalking-ingress.yaml
+kubectl  apply -f skywalking-ingress.yaml -n apm
 ```  
 部署机器及宿主机域名解析后，访问https://skywalking.hisun.local
 
