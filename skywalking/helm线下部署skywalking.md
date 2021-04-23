@@ -59,8 +59,7 @@ kubectl create namespace apm
 
 ## 2、下载离线chart
 ```
-git clone https://github.com/apache/skywalking-kubernetes ?
-git clone git@github.com:apache/skywalking-kubernetes.git
+git clone https://github.com/apache/skywalking-kubernetes 
 cd skywalking-kubernetes/chart
 
 # 打包helm的chart
@@ -75,8 +74,7 @@ helm repo update
 ```
 
 ### 3.2 下载仓库
- `git clone https://github.com/apache/skywalking-kubernetes ?`   
- `git clone git@github.com:apache/skywalking-kubernetes.git`
+ `git clone https://github.com/apache/skywalking-kubernetes `   
 
 ### 3.3 安装repo
 ```
