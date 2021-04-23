@@ -41,7 +41,7 @@ type: Opaque
 
 - enable-exporter.yaml 
 
-	```
+```
 	apiVersion: databases.spotahome.com/v1
 kind: RedisFailover
 metadata:
@@ -69,17 +69,17 @@ spec:
               storage: 1Gi
   auth:
     secretPath: redis-auth
-	```
-	```
-	kubectl apply -f enable-exporter.yaml -n redis-system
-	```
+```
+```
+kubectl apply -f enable-exporter.yaml -n redis-system
+```
 	
 ### 4. 对接prometheus
 
 - pod-monitor.yaml
-	
+
 	```
-	apiVersion: monitoring.coreos.com/v1
+	apiVersion: monitoring.coreos.com/v1  
     kind: PodMonitor
     metadata:
       name: redis
