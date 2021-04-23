@@ -60,7 +60,17 @@ EOF
 helm install chartmuseum  -f values.yaml -n chartmuseum chartmuseum-3.1.0.tgz
 ```
 
-## 安装 helm-push 插件
+## 操作 chartmuseum
+
+### 外部操作 chartmuseum 
+
+操作客户端解析 chartmuseum ingress 地址
+
+```
+charts.apps181227.hisun.k8s
+```
+
+### 安装 helm-push 插件
 
 ```
 wget https://github.com/chartmuseum/helm-push/releases/download/v0.9.0/helm-push_0.9.0_linux_amd64.tar.gz
@@ -93,17 +103,29 @@ helm repo add chartmuseum-hisun http://chartmuseum.chartmuseum.svc:8080 --userna
 helm repo add  chartmuseum-hisun https://charts.apps181227.hisun.k8s --username admin --password 12345678 --insecure-skip-tls-verify
 ```
 
-推送 chart 到 chartmuseum-hisun
+push chart 到 chartmuseum-hisun
 
 ```
 helm push chartmuseum-3.1.0.tgz chartmuseum-hisun
 ```
 
-chartmuseum-hisun 仓库删除 chart 
+### 使用api 操作 chartmuseum
+
+push chart
 
 ```
-curl --user admin:12345678 -X DELETE   http://chartmuseum.chartmuseum.svc:8080/api/charts/provisioner/2.4.0
+curl --user admin:12345678 --data-binary "@chartmuseum-3.1.0.tgz"  https://charts.apps181227.hisun.k8s/api/chartmuseum/charts
 ```
+
+删除 chart 
+
+```
+curl --user admin:12345678 -X DELETE   http://chartmuseum.chartmuseum.svc:8080/api/charts/chartmuseum/2.4.0
+```
+
+更新多 api 操作 参考 ：
+
+https://github.com/helm/chartmuseum
 
 ## 参考：
 
