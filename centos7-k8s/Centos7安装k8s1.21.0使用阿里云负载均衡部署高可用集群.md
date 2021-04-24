@@ -350,7 +350,7 @@ EOF
 172.26.181.230	node1.kont.k8s
 ```
 
-###  所有主机安装配置 dnsmasq
+### 所有主机安装配置 dnsmasq
 
 #### 所有主机安装 dnsmasq
 
@@ -407,7 +407,6 @@ EOF
 
 systemctl restart dnsmasq
 ```
-
 #### 所有主机配置 /etc/resolv.conf
 
 配置 /etc/resolv.conf, 引用本机 dnsmasq
@@ -447,7 +446,7 @@ https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/
 https://pkg.go.dev/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm#DNS
 
 https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/control-plane-flags/
-
+
 https://pkg.go.dev/k8s.io/kubernetes@v1.21.0/cmd/kubeadm/app/apis/kubeadm/v1beta2
 
 https://godoc.org/k8s.io/kubernetes/pkg/proxy/apis/config#KubeProxyConfiguration
@@ -571,6 +570,46 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 记录 kubeadm init 输出的 kubeadm join 命令。 你需要此命令将节点加入集群。
 
+
+### 配置 coredns forward
+
+coredns forward 指向到 dns lb 
+
+```
+DNS_SERVER=172.26.181.233:53
+cat > coredns-config.yaml <<EOF
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . $DNS_SERVER {
+           max_concurrent 1000
+        }
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+EOF
+
+kubectl apply -f coredns-config.yaml -n kube-system
+kubectl rollout restart deploy coredns -n kube-system
+```
 
 ### 重置 kubeadm 安装配置（初始化异常中断重装时使用）
 
@@ -873,3 +912,7 @@ kubectl -n ingress exec -it $POD_NAME -- /nginx-ingress-controller --version
 [kubectl 备忘单](https://kubernetes.io/zh/docs/reference/kubectl/cheatsheet/)
 
 [coredns loop troubleshooting](https://coredns.io/plugins/loop/#troubleshooting)
+
+[自定义 DNS 服务](https://kubernetes.io/zh/docs/tasks/administer-cluster/dns-custom-nameservers/)
+
+[coredns forward](https://coredns.io/plugins/forward/)
