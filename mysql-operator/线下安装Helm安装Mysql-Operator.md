@@ -61,7 +61,6 @@
 	  secretName: my-secret
 	
 	```
-    使用 kubectl apply -f mysql.yaml -n mysql-system进行部署，该yaml文档在kont自动化部署目录中，相关内容请根据实际情况修改
 	
 - 持久化三种方式
 
