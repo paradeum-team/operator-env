@@ -38,6 +38,9 @@ data:
   password: cnMxMjM=
 type: Opaque
 ```
+```
+kubectl apply -f secret.yaml -n redis-system
+```
 
 - enable-exporter.yaml 
 
