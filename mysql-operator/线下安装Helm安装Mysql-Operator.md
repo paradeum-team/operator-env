@@ -9,7 +9,11 @@
 	```
 	tar -zxvf mysql-operator-0.4.0.tgz
 	```
-	修改value.yaml,把镜像推到内部镜像仓库，默认推到了registry.hisun.netwarps.com
+	修改value.yaml  
+	
+	- 把镜像推到内部镜像仓库，默认推到了registry.hisun.netwarps.com   
+	
+	- ApplyMySQLPromotionAfterMasterFailover参数修改成true
 
 	
 ### 2. helm部署mysql-operator
