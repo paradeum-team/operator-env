@@ -89,6 +89,8 @@ spec:
     ```
    
 - 创建用户密码（自定义）
+    
+    [命令参考](https://blog.csdn.net/liangkaiping0525/article/details/103436919)
 
     ```
     # 进入容器内执行，添加admin用户，密码为admin
@@ -97,6 +99,12 @@ spec:
     # 将admin加入到管理员组
     rabbitmqctl set_user_tags admin administrator
     
+    # 添加vhost
+    rabbitmqctl add_vhost /lemon
+    
+    #授予admin用户可访问虚拟主机/lemon，并在所有的资源上具备可配置、可写及可读的权限
+    rabbitmqctl set_permissions -p /lemon admin ".*" ".*" ".*"
+
     #查看用户列表
     rabbitmqctl  list_users
     ```
