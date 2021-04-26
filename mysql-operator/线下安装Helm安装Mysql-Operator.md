@@ -35,13 +35,18 @@
 	
 ### 3. 部署mysql服务	
 
-- secret.yaml 用来创建mysql的root密码
+- 编辑secret.yaml 用来创建mysql的root密码
 
+    ```
+    kuberctl apply -f  secret.yaml 
+    ```
+    
 	```
 	apiVersion: v1
 	kind: Secret
 	metadata:
 	  name: my-secret
+	  namespace: mysql-system
 	type: Opaque
 	data:
 	  # root password is required to be specified
@@ -49,20 +54,30 @@
 	
 	```
 	
-- cluster-mysql.yaml
+- 编辑cluster-mysql.yaml（默认带pvc发布）
 
+    ```
+    kuberctl apply -f cluster-mysql.yaml
+    ```
+        
 	```
 	apiVersion: mysql.presslabs.org/v1alpha1
 	kind: MysqlCluster
 	metadata:
 	  name: mysql-cluster
+	  namespace: mysql-system
 	spec:
 	  replicas: 2
 	  secretName: my-secret
-	
+	  volumeSpec:
+	    persistentVolumeClaim:
+	      accessModes: ["ReadWriteOnce"]
+	      resources:
+	        requests: 
+	          storage: 1Gi
 	```
 	
-- 持久化三种方式
+- 持久化三种方式(任选一种即可，上面部署了持久化，下面就不用部署了)
 
   - PVC
   
@@ -81,7 +96,7 @@
             requests:
               storage: 1Gi
 	```
-  		
+	
   - HostPath
   
     ```
@@ -96,9 +111,8 @@
         hostPath:
           path: /path/to/host/dir/
     ```
-		
-		
-  - EmptyDir	 
+    
+  - EmptyDir
 		
 	```
     apiVersion: mysql.presslabs.org/v1alpha1
