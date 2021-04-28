@@ -60,11 +60,15 @@ kubectl create namespace monitoring
 ## 创建`values.yaml`文件
 
 ```
+#修改
+
 # 域名后缀
 domain="apps164103.hisun.local"
 # 私有镜像仓库地址
 repository="registry.hisun.netwarps.com"
 
+
+#执行创建 values 命令
 cat <<EOF > kube-prometheus-stack-values.yaml
 alertmanager:
   ingress:
