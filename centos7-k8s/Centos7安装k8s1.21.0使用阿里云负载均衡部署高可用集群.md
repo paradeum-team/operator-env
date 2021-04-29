@@ -45,7 +45,7 @@ IP自动获取为 172.26.181.233
 172.26.181.229:6443
 ```
 
-#### 添加监听端口 udp 53
+#### 添加监听端口 dnsmasq udp 53
 
 设置后端服务器组 
 	
@@ -55,6 +55,15 @@ IP自动获取为 172.26.181.233
 172.26.181.229:53
 ```
 
+#### 添加监听端口 chronyd udp 123
+
+设置后端服务器组 
+	
+```
+172.26.181.227:123
+172.26.181.228:123
+172.26.181.229:123
+```
 ## 所有主机设置主机名
 
 主机配置好对应主机名和解析
@@ -206,7 +215,6 @@ net.ipv4.conf.all.send_redirects=0
 net.ipv4.conf.default.accept_redirects=0
 net.ipv4.conf.default.secure_redirects=0
 net.ipv4.conf.default.send_redirects=0
-net.ipv4.ip_conntrack_max = 65536
 net.ipv4.ip_local_port_range=32768 60999
 net.ipv4.neigh.default.gc_thresh1=2048
 net.ipv4.neigh.default.gc_thresh2=4096
@@ -283,34 +291,60 @@ ipvsadm -ln
 
 #### 安装 chrnoyd
 
+所有主机安装 chonyd
+
 ```
 yum install -y chronyd
 ```
 
+所有 master 开放server 同步权限 
+
 ```
+grep '^allow 0.0.0.0/0' /etc/chrony.conf || echo "allow 0.0.0.0/0" >> /etc/chrony.conf
+
+systemctl restart chronyd
+```
+
+所有 node 主机配置 chronyd (master 默认配置不修改)
+
+```
+LB_IP=172.26.181.233
+
 cat<<EOF|sudo tee /etc/chrony.conf
-server 172.26.164.227 iburst
-server 172.26.164.228 iburst
-server 172.26.164.229 iburst
+server $LB_IP minpoll 4 maxpoll 10 iburst
 driftfile /var/lib/chrony/drift
 makestep 10 3
 rtcsync
 local stratum 10
 logdir /var/log/chrony
 EOF
-```
 
-```
+# 重启 chronyd
 systemctl restart chronyd
 ```
 
 #### 设置时区
 
 ```
+# 设置时区
 timedatectl set-timezone Asia/Shanghai
+# 硬件时间设置成 UTC
 timedatectl set-local-rtc 0
+# 查看时间状态
 timedatectl
+
+# 输出下面内容
+      Local time: Wed 2021-04-28 17:54:04 CST
+  Universal time: Wed 2021-04-28 09:54:04 UTC
+        RTC time: Wed 2021-04-28 09:54:04
+       Time zone: Asia/Shanghai (CST, +0800)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+      DST active: n/a
 ```
+
+其中 `NTP synchronized: yes` 表示时间同步正常运行
 
 ### 所有节点配置 ulimit
 
