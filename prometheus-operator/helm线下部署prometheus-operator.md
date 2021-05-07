@@ -29,26 +29,29 @@ https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-promet
 https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-node-exporter/values.yaml
+https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-state-metrics/values.yaml
 ```
 
 
 ```
 docker.io/jettech/kube-webhook-certgen:v1.5.0
-docker.io/grafana/grafana:7.3.5
+docker.io/grafana/grafana:7.5.5
+docker.io/bats/bats:v1.1.0
 quay.io/prometheus/alertmanager:v0.21.0
-quay.io/prometheus-operator/prometheus-operator:v0.45.0
-quay.io/prometheus-operator/prometheus-config-reloader:v0.45.0
-quay.io/prometheus/prometheus:v2.24.0
-quay.io/prometheus/node-exporter:v1.0.1
+quay.io/prometheus-operator/prometheus-operator:v0.47.0
+quay.io/prometheus-operator/prometheus-config-reloader:v0.47.0
+quay.io/prometheus/prometheus:v2.26.0
 docker.io/curlimages/curl:7.73.0
 docker.io/library/busybox:1.31.1
-docker.io/kiwigrid/k8s-sidecar:1.1.0
+docker.io/kiwigrid/k8s-sidecar:1.10.7
+quay.io/prometheus/node-exporter:v1.1.2
+k8s.gcr.io/kube-state-metrics/kube-state-metrics:v1.9.8
 ```
 
 ## 下载chart
 
 ```
-helm pull prometheus-community/kube-prometheus-stack --version 13.0.2
+helm pull prometheus-community/kube-prometheus-stack --version 
 ```
 
 ## 创建 namespace
@@ -60,11 +63,9 @@ kubectl create namespace monitoring
 ## 创建`values.yaml`文件
 
 ```
-#修改
-
-# 域名后缀
-domain="apps164103.hisun.local"
-# 私有镜像仓库地址
+# 域名后缀(根据环境修改)
+domain="apps164103.hisun.k8s"
+# 私有镜像仓库地址(修改私有镜像仓库地址修改)
 repository="registry.hisun.netwarps.com"
 
 
@@ -74,10 +75,11 @@ alertmanager:
   ingress:
     enabled: true
     hosts: ["alertmanager.${domain}"]
+    pathType: ImplementationSpecific
   alertmanagerSpec:
     image:
       repository: ${repository}/prometheus/alertmanager
-    replicas: 1
+    replicas: 2
     storage:
       volumeClaimTemplate:
         spec:
@@ -90,11 +92,18 @@ grafana:
   ingress:
     enabled: true
     hosts: ["grafana.${domain}"]
+    pathType: ImplementationSpecific
   replicas: 1
+  persistence:
+    enabled: true
+    storageClassName: "nfs3-client"
+    size: 1Gi
   image:
     repository: ${repository}/grafana/grafana
   initChownData:
-    image: ${repository}/library/busybox
+    image:
+      repository: ${repository}/library/busybox
+      tag: "1.31.1"
   downloadDashboardsImage:
     repository: ${repository}/curlimages/curl
   sidecar:
@@ -114,14 +123,15 @@ prometheus:
   ingress:
     enabled: true
     hosts: ["prometheus.${domain}"]
+    pathType: ImplementationSpecific
   prometheusSpec:
-    replicas: 1
+    replicas: 2
     image:
       repository: ${repository}/prometheus/prometheus
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
+          storageClassName: local-volume
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -146,7 +156,7 @@ Usage:
 使用已经下载的 kube-prometheus-stack chart包安装
 
 ```
-helm install prometheus-community kube-prometheus-stack-13.0.2.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
+helm install prometheus-community kube-prometheus-stack-15.4.4.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
 ```
 
 ## 更新已部署服务
@@ -163,7 +173,7 @@ Usage:
 使用修改后的`values.yaml`更新服务
 
 ```
-helm upgrade prometheus-community kube-prometheus-stack-13.0.2.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
+helm upgrade prometheus-community kube-prometheus-stack-15.4.4.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
 ```
 ## 查看 helm 部署的 charts
 
@@ -187,7 +197,7 @@ kubectl get secret prometheus-community-grafana -o yaml  -n monitoring |grep " a
 ## 访问grafana
 
 ```
-http://grafana.apps164103.hisun.local/
+http://grafana.apps164103.hisun.k8s/
 ```
 
 ## 卸载promehteus-operator相关服务
@@ -195,3 +205,15 @@ http://grafana.apps164103.hisun.local/
 ```
 helm uninstall prometheus-community -n  monitoring
 ```
+
+## 故障处理
+
+### grafana 开启 persistence 持久化后，使用 helm 部署报错
+
+```
+Error: template: kube-prometheus-stack/charts/grafana/templates/deployment.yaml:47:10: executing "kube-prometheus-stack/charts/grafana/templates/deployment.yaml" at <include "grafana.pod" .>: error calling include: template: kube-prometheus-stack/charts/grafana/templates/_pod.tpl:23:18: executing "grafana.pod" at <.Values.initChownData.image.sha>: can't evaluate field sha in type interface {}
+```
+
+临时解决：
+
+关闭 persistence 

@@ -45,7 +45,7 @@ helm repo update
 #### 下载 chart
 
 ```
-helm pull banzaicloud-stable/kafka-operator --version v0.4.4
+helm pull banzaicloud-stable/kafka-operator --version v0.4.6
 ```
 
 #### 自定义 values
@@ -59,7 +59,7 @@ operator:
   annotations: {}
   image:
     repository: ${repository}/banzaicloud/kafka-operator
-    tag: v0.14.0
+    tag: v0.15.1
     pullPolicy: IfNotPresent
 certManager:
   namespace: "cert-manager"
@@ -71,7 +71,7 @@ prometheusMetrics:
     enabled: true
     image:
       repository: ${repository}/kubebuilder/kube-rbac-proxy
-      tag: v0.5.0
+      tag: v0.8.0
       pullPolicy: IfNotPresent
     serviceAccount:
       create: true
@@ -80,13 +80,19 @@ EOF
 ```
 
 ```
-helm install kafka-operator --create-namespace --namespace=kafka -f kafka-operator-values.yaml  kafka-operator-0.4.4.tgz
+helm install kafka-operator --create-namespace --namespace=kafka -f kafka-operator-values.yaml  kafka-operator-0.4.6.tgz
+```
+
+查看 pod
+
+```
+kubectl get pod -n kafka
 ```
 
 #### 部署 kakfa
 
 ```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/master/config/samples/simplekafkacluster.yaml
+wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/simplekafkacluster.yaml
 ```
 
 获取 zk svc 名称 
@@ -98,7 +104,7 @@ NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)
 kafka-zk-zookeeper-client     ClusterIP   10.110.60.213    <none>        2181/TCP                              11d
 ```
 
-修改`simplekafkacluster.yaml`文件中 下面内容, brokers 为节点数量，可以填写多个
+修改或添加`simplekafkacluster.yaml`文件中 下面内容, brokers 为节点数量，可以填写多个
 
 ```
 ...
@@ -108,6 +114,19 @@ spec:
     - "kafka-zk-zookeeper-client.zookeeper.svc:2181"
   ...
   clusterImage: "registry.hisun.netwarps.com/banzaicloud/kafka:2.13-2.6.0-bzc.1"
+  ...
+  brokerConfigGroups:
+    default:
+      ...
+      storageConfigs:
+        - mountPath: "/kafka-logs"
+          pvcSpec:
+            storageClassName: local-volume
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
   ...
   brokers:
   - id: 0
@@ -120,8 +139,10 @@ spec:
   monitoringConfig:
     jmxImage: "registry.hisun.netwarps.com/banzaicloud/jmx-javaagent:0.14.0"
     pathToJar: "/opt/jmx_exporter/jmx_prometheus_javaagent-0.14.0.jar"
+  ...
   cruiseControlConfig:
     image: registry.hisun.netwarps.com/banzaicloud/cruise-control:2.5.23
+    ...
 ```
 
 部署
@@ -133,7 +154,7 @@ kubectl apply -n kafka -f simplekafkacluster.yaml
 #### 收集 kafka 监控数据到 prometheus
 
 ```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/master/config/samples/kafkacluster-prometheus.yaml
+wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
 ```
 
 修改镜像源为私有源
@@ -162,6 +183,8 @@ prometheus-kafka-prometheus-0             2/2     Running   1          7m29s
 
 #### 创建 ingress
 
+创建 kafka-cruisecontrol-ingress.yaml（根据环境修改 host）
+
 ```
 cat <<EOF > kafka-cruisecontrol-ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -173,7 +196,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: kafka-cruisecontrol.apps164103.hisun.local
+  - host: kafka-cruisecontrol.apps164103.hisun.k8s
     http:
       paths:
       - path: /
@@ -190,7 +213,7 @@ EOF
 kubectl apply -f kafka-cruisecontrol-ingress.yaml -n kafka
 ```
 
-访问ui： `http://kafka-cruisecontrol.apps164103.hisun.local/`
+访问ui： `http://kafka-cruisecontrol.apps164103.hisun.k8s/`
 
 
 ## 故障处理
