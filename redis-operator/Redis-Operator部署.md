@@ -141,4 +141,8 @@
  - 结合redis哨兵模式，验证服务可用性。
  - helm一键部署服务
  
+### 文档
+
+   - [redis-operator](https://github.com/spotahome/redis-operator)
+
 #### END
