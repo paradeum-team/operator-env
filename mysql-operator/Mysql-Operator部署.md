@@ -59,4 +59,4 @@ https://grafana.com/grafana/dashboards/7362
 
 #### 参考地址
 
-[源码](./https://github.com/presslabs/mysql-operator)
+[mysql-operator](https://github.com/presslabs/mysql-operator)

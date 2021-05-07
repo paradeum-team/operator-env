@@ -106,3 +106,7 @@ kubectl apply -f enable-exporter.yaml -n redis-system
 ### 5. 下载redis的监控模板，在grafana中创建
 
  - https://grafana.com/grafana/dashboards/763
+
+### 文档
+
+   - [redis-operator](https://github.com/spotahome/redis-operator)
