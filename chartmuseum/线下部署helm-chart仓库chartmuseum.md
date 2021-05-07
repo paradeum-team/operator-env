@@ -24,6 +24,8 @@ kubectl create secret generic chartmuseum-secret --from-literal="basic-auth-user
 
 创建 自定义 values.yaml
 
+注意：replicaCount 必须为1，设置为2时，会导致数据不同步
+
 ```
 cat>values.yaml<<EOF
 image:
@@ -50,7 +52,7 @@ ingress:
     kubernetes.io/ingress.class: nginx
   hosts:
   - name: charts.apps181227.hisun.k8s
-    tls: true
+    tls: true∂
 EOF
 ```
 
@@ -114,13 +116,13 @@ helm push chartmuseum-3.1.0.tgz chartmuseum-hisun
 push chart
 
 ```
-curl --user admin:12345678 --data-binary "@chartmuseum-3.1.0.tgz"  https://charts.apps181227.hisun.k8s/api/chartmuseum/charts
+curl -k --user admin:12345678 --data-binary "@chartmuseum-3.1.0.tgz"  https://charts.apps181227.hisun.k8s/api/charts
 ```
 
 删除 chart 
 
 ```
-curl --user admin:12345678 -X DELETE   http://chartmuseum.chartmuseum.svc:8080/api/charts/chartmuseum/2.4.0
+curl -k --user admin:12345678 -X DELETE    https://charts.apps181227.hisun.k8s/api/charts/chartmuseum/3.1.0
 ```
 
 更新多 api 操作 参考 ：

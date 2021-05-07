@@ -27,6 +27,12 @@ helm install pravega zookeeper-operator-0.2.9.tgz -n zookeeper \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl
 ```
 
+查看 pod
+
+```
+kubectl get pod -n zookeeper
+```
+
 ## 部署zookeeper
 
 安装单机zookeeper
@@ -35,18 +41,15 @@ helm install pravega zookeeper-operator-0.2.9.tgz -n zookeeper \
 # 下载最新chart包
 helm pull pravega/zookeeper 
 helm install kafka-zk zookeeper-0.2.9.tgz -n zookeeper \
---set replicas=1 \
---set image.repository=registry.hisun.netwarps.com/pravega/zookeeper \
---set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl
-```
-
-更新zookeeper 为3副本
-
-```
-helm upgrade kafka-zk zookeeper-0.2.9.tgz -n zookeeper \
 --set replicas=3 \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper \
---set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl
+--set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl \
+--set persistence.storageClassName=local-path
+```
+查看 pod
+
+```
+kubectl get pod -n zookeeper
 ```
 
 部署 zookeeper web ui
@@ -54,6 +57,9 @@ helm upgrade kafka-zk zookeeper-0.2.9.tgz -n zookeeper \
 创建 部署yaml
 
 ```
+# 根据环境修改应用域名后缀
+APP_DOMAIN=apps164103.hisun.local
+
 cat<<EOF > zkweb.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -127,7 +133,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: zkweb.apps164103.hisun.local
+  - host: zkweb.${APP_DOMAIN}
     http:
       paths:
       - path: /
@@ -145,6 +151,12 @@ EOF
 kubectl apply -f zkweb.yaml -n zookeeper
 ```
 
+查看 pod
+
+```
+kubectl get pod -n zookeeper
+```
+
 查看 zookeeper svc 名称
 
 ```
@@ -155,6 +167,17 @@ kafka-zk-zookeeper-headless   ClusterIP   None             <none>        2181/TC
 zkweb                         ClusterIP   10.105.215.100   <none>        8080/TCP                              5m14s
 ```
 
+解析 apps164103.hisun.local 并访问
+
+```
+zkweb.apps164103.hisun.local
+```
+
+首页输入
+
+```
+kafka-zk-zookeeper-client.zookeeper.svc:2181
+```
 
 ## 参考
 

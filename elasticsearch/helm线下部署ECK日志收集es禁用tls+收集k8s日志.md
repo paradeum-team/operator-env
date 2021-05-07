@@ -18,7 +18,7 @@ helm pull  elastic/eck-operator-crds
 ### 安装 crds (由于crd是全局资源，不希望 helm 卸载 es eck 时同时卸载 crds ,所以独立安装)
 
 ```
-helm install elastic-operator-crds  eck-operator-crds-1.3.1.tgz -n elastic-system --create-namespace
+helm install elastic-operator-crds  eck-operator-crds-1.5.0.tgz -n elastic-system --create-namespace
 ```
 
 ### 下载eck-operator chart
@@ -44,7 +44,7 @@ https://github.com/elastic/cloud-on-k8s/blob/1.3/deploy/eck-operator/values.yaml
 ### 本地安装eck-operator
 
 ```
-helm install elastic-operator eck-operator-1.3.1.tgz -n elastic-system --create-namespace \
+helm install elastic-operator eck-operator-1.5.0.tgz -n elastic-system --create-namespace \
 --set=installCRDs=false \
 --set=webhook.enabled=true \
 --set=image.repository=registry.hisun.netwarps.com/eck/eck-operator \
@@ -61,14 +61,14 @@ metadata:
   name: kont
   namespace: elastic-system
 spec:
-  version: 7.10.2
+  version: 7.12.0
   http:
     tls:
       selfSignedCertificate:
         disabled: true
   nodeSets:
   - name: default
-    count: 1
+    count: 3
     config:
       node.roles: ["master", "data", "ingest", "ml", "transform"]
     volumeClaimTemplates:
@@ -80,7 +80,7 @@ spec:
         resources:
           requests:
             storage: 100Gi
-        storageClassName: local-path
+        storageClassName: local-volume
     podTemplate:
       spec:
         #nodeSelector:
@@ -97,6 +97,18 @@ spec:
 EOF
 ```
 
+执行安装 es
+
+```
+kubectl apply -f kont-elasticsearch.yaml
+```
+
+查看 es pod
+
+```
+kubectl get pod -n elastic-system -o wide
+```
+
 ## 安装 kibana
 
 创建 kibana yaml
@@ -108,11 +120,17 @@ kind: Kibana
 metadata:
   name: kont
 spec:
-  version: 7.10.2
+  version: 7.12.0
   count: 1
   elasticsearchRef:
     name: kont
 EOF
+```
+
+执行安装 kibana
+
+```
+kubectl apply -f kont-kibana.yaml -n elastic-system
 ```
 
 查看 kibana svc 名称
@@ -121,7 +139,7 @@ EOF
 kubectl get svc -n elastic-system
 ```
 
-创建 kibana ingress yaml
+创建 kibana ingress yaml (根据环境修改 host)
 
 ```
 cat >kont-kb-ingress.yaml<<EOF
@@ -135,7 +153,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS" # use backend https
 spec:
   rules:
-  - host: kont-kibana.apps164103.hisun.local
+  - host: kont-kibana.apps164103.hisun.k8s
     http:
       paths:
       - path: /
@@ -153,34 +171,37 @@ EOF
 kubectl apply -f kont-kb-ingress.yaml -n elastic-system
 ```
 
-kont-kibana.apps164103.hisun.local 解析到 ingress ip
+kont-kibana.apps164103.hisun.k8s 解析到 ingress ip
 
 外部访问 kibana 地址
 
 ```
-https://kont-kibana.apps164103.hisun.local/
+https://kont-kibana.apps164103.hisun.k8s/
 ```
 
 kibana 默认登录账号为 elastic, 查看密码
 
 ```
-kubectl get secret kont-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo -n elastic-system
+kubectl get secret kont-es-elastic-user -o=jsonpath='{.data.elastic}' -n elastic-system| base64 --decode; echo
 ```
 
 ## 安装 k8s 集群使用 filebeat
 
-下载
+参考
 
 ```
-https://raw.githubusercontent.com/elastic/cloud-on-k8s/1.3/config/recipes/beats/filebeat_autodiscover.yaml
+https://raw.githubusercontent.com/elastic/cloud-on-k8s/1.5/config/recipes/beats/filebeat_autodiscover.yaml
 ```
 
-- 修改 version, 
+- 修改 Beat 中 name
+- 修改所有 version
+- 修改所有 namespace
 - 添加挂载 localtime
+- 添加忽略不可调度 tolerations
 - 删除 kind: Elasticsearch 相关配置(对接现有 es)
 - 删除 kind: Kibana 相关配置（对接现有 kibana）
 
-文件内容如下：
+修改后文件内容如下：
 
 k8s-filebeat.yaml
 
@@ -192,7 +213,7 @@ metadata:
   namespace: elastic-system
 spec:
   type: filebeat
-  version: 7.10.2
+  version: 7.12.0
   elasticsearchRef:
     name: kont
   kibanaRef:
@@ -220,6 +241,9 @@ spec:
         terminationGracePeriodSeconds: 30
         dnsPolicy: ClusterFirstWithHostNet
         hostNetwork: true # Allows to provide richer host metadata
+        tolerations:
+        - effect: NoSchedule
+          operator: Exists
         containers:
         - name: filebeat
           securityContext:
@@ -264,6 +288,7 @@ rules:
   resources:
   - namespaces
   - pods
+  - nodes
   verbs:
   - get
   - watch
@@ -287,6 +312,17 @@ roleRef:
   kind: ClusterRole
   name: filebeat
   apiGroup: rbac.authorization.k8s.io
+```
+
+执行安装 filebeat
+
+```
+kubectl apply -f k8s-filebeat.yaml -n elastic-system
+```
+查看 pod
+
+```
+kubectl get pod -n elastic-system -o wide
 ```
 
 ## 参考: 
