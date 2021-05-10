@@ -772,26 +772,42 @@ kubectl create namespace ingress
 
 # nginx-ingress 会创建 type 为 LoadBalancer 的 service，可以使用云厂商的负载均衡服务进行对接
 # 阿里云环境使用 ipvs ,不能添加 controller.service.externalIPs, 否则会导致 externalIPs 的所在节点 访问 externalIPs 所在网段访问不通
+# nginx-ingress 部署到 master 节点不抢占 node 资源
 
 
 helm pull ingress-nginx/ingress-nginx
 
-helm install ingress-nginx ingress-nginx-3.29.0.tgz -n ingress \
---set controller.image.repository=registry.hisun.netwarps.com/bitnami/nginx-ingress-controller \
---set controller.image.tag=0.44.0 \
---set controller.image.digest=sha256:278ad67a8f9f2008d213c86c43c3f37f69ccdecfded91bf57aaab3e4cd6ebc58 \
---set controller.admissionWebhooks.patch.image.repository=registry.hisun.netwarps.com/jettech/kube-webhook-certgen \
---set controller.replicaCount=3
+# 创建 values.yaml
+
+REGISTRY=registry.hisun.netwarps.com
+
+cat > values.yaml <<EOF
+controller:
+  image:
+    repository: ${REGISTRY}/bitnami/nginx-ingress-controller
+    tag: 0.44.0
+    digest: sha256:278ad67a8f9f2008d213c86c43c3f37f69ccdecfded91bf57aaab3e4cd6ebc58
+  admissionWebhooks:
+    patch:
+      image:
+        repository:  ${REGISTRY}/jettech/kube-webhook-certgen
+  kind: DaemonSet
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+EOF
+
+# 更新或创建 ingress
+helm upgrade ingress-nginx ingress-nginx-3.29.0.tgz -f values.yaml -n ingress
 ```
 
-
-helm upgrade ingress-nginx ingress-nginx-3.29.0.tgz -n ingress \
---set controller.image.repository=registry.hisun.netwarps.com/bitnami/nginx-ingress-controller \
---set controller.image.tag=0.44.0 \
---set controller.image.digest=sha256:278ad67a8f9f2008d213c86c43c3f37f69ccdecfded91bf57aaab3e4cd6ebc58 \
---set controller.admissionWebhooks.patch.image.repository=registry.hisun.netwarps.com/jettech/kube-webhook-certgen \
---set controller.replicaCount=3 \
---set controller.service.externalIPs[0]=172.26.181.230
 
 ### 阿里云负载均衡反向代理 ingress-nginx
 
@@ -810,9 +826,9 @@ ingress-nginx-controller-admission   ClusterIP      10.99.172.75     <none>     
 设置后端地址列表
 
 ```
-172.26.181.230:30812
-172.26.181.231:30812
-172.26.181.232:30812
+172.26.181.227:30812
+172.26.181.228:30812
+172.26.181.229:30812
 ```
 
 阿里云负载均衡添加监听tcp 443
@@ -820,9 +836,9 @@ ingress-nginx-controller-admission   ClusterIP      10.99.172.75     <none>     
 设置后端地址列表
 
 ```
-172.26.181.230:30482
-172.26.181.231:30482
-172.26.181.232:30482
+172.26.181.227:30482
+172.26.181.228:30482
+172.26.181.229:30482
 ```
 
 设置后，就可以使用负载均衡 IP 访问 ingress 了
