@@ -17,6 +17,8 @@ https://github.com/Oteemo/charts/blob/master/charts/sonarqube/values.yaml
 
 ## 安装
 
+安装 sonarqube
+
 ```
 helm install sonarqube sonarqube-9.5.0.tgz \
  -n sonarqube --create-namespace \
@@ -25,10 +27,12 @@ helm install sonarqube sonarqube-9.5.0.tgz \
  --set initSysctl.image=registry.hisun.netwarps.com/library/busybox:1.32 \
  --set tests.image=registry.hisun.netwarps.com/dduportal/bats:0.4.0 \
  --set ingress.enabled=true \
- --set ingress.hosts[0].name=sonar.apps164103.hisun.local \
+ --set ingress.hosts[0].name=sonar.apps164103.hisun.k8s \
  --set postgresql.image.registry=registry.hisun.netwarps.com \
  --set postgresql.image.tag=11.9.0
 ```
+
+修改参数更新 sonarqube
 
 ```
 helm upgrade sonarqube sonarqube-9.5.0.tgz \
@@ -38,19 +42,25 @@ helm upgrade sonarqube sonarqube-9.5.0.tgz \
  --set initSysctl.image=registry.hisun.netwarps.com/library/busybox:1.32 \
  --set tests.image=registry.hisun.netwarps.com/dduportal/bats:0.4.0 \
  --set ingress.enabled=true \
- --set ingress.hosts[0].name=sonar.apps164103.hisun.local \
+ --set ingress.hosts[0].name=sonar.apps164103.hisun.k8s \
  --set postgresql.image.registry=registry.hisun.netwarps.com \
  --set postgresql.image.tag=11.9.0
 ```
 
+查看 pod 状态
+
+```
+kubectl get pod -n sonarqube
+```
+
 ## 访问
 
-解析 sonar.apps164103.hisun.local 域名到 ingress 主机
+解析 sonar.apps164103.hisun.k8s 域名到 ingress 主机
 
 访问下面地址
 
 ```
-http://sonar.apps164103.hisun.local/
+http://sonar.apps164103.hisun.k8s/
 ```
 
 默认账号密码 admin admin 
