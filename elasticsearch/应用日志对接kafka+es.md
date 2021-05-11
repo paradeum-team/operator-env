@@ -70,7 +70,7 @@ spec:
       spec:
         dnsPolicy: ClusterFirstWithHostNet
         nodeSelector:
-          node-role.kubernetes.io/compute: 'true'
+          kubernetes.io/os: linux
         hostNetwork: true
         securityContext:
           runAsUser: 0
@@ -100,7 +100,7 @@ spec:
 安装 kont-filebeat
 
 ```
-kubectl apply -f kont-filebeat.yaml
+kubectl apply -f kont-filebeat.yaml -n elastic-system
 ```
 
 查看 pods
@@ -242,7 +242,7 @@ spec:
 安装 kont-logstash
 
 ```
-kubectl apply -f kont-logstash.yaml
+kubectl apply -f kont-logstash.yaml -n elastic-system
 ```
 
 查看 pods
