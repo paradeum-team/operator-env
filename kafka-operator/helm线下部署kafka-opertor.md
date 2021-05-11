@@ -113,6 +113,9 @@ spec:
   zkAddresses:
     - "kafka-zk-zookeeper-client.zookeeper.svc:2181"
   ...
+  readOnlyConfig: |
+    auto.create.topics.enable=true
+  ...
   clusterImage: "registry.hisun.netwarps.com/banzaicloud/kafka:2.13-2.6.0-bzc.1"
   ...
   brokerConfigGroups:
