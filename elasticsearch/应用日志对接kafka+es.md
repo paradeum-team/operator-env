@@ -271,9 +271,9 @@ https://kont-kibana.apps181227.hisun.k8s/
 
 `Index pattern name` 输入 kont-apps
 
-`Time field` 选择 T
+`Time field` 选择 @timestamp
 
-点击 Create index pattern
+点击 `Create index pattern`
 
 ### 创建索引模板
 
