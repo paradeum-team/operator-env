@@ -163,7 +163,7 @@ curl -L -o kubectl-cert-manager.v1.3.1.tar.gz https://github.com/jetstack/cert-m
 tar xzf kubectl-cert-manager.v1.3.1.tar.gz
 sudo mv kubectl-cert_manager /usr/local/bin
 ```
-
+[kubectl-cert-manager.v1.3.1.tar.gz另一下载地址](https://pnode.solarfs.io/dn/file/df126f020af39a33d4df5d51067f142f/kubectl-cert-manager.v1.3.1.tar.gz)
 ## 参考 
 
 [https://cert-manager.io/docs/installation/kubernetes/](https://cert-manager.io/docs/installation/kubernetes/)
