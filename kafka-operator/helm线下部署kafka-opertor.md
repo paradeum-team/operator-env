@@ -216,7 +216,7 @@ EOF
 kubectl apply -f kafka-cruisecontrol-ingress.yaml -n kafka
 ```
 
-访问ui： `http://kafka-cruisecontrol.apps164103.hisun.k8s/`
+域名解析后访问ui： `http://kafka-cruisecontrol.apps164103.hisun.k8s/`
 
 
 ## 故障处理
