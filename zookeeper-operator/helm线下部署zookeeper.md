@@ -20,7 +20,7 @@ kubectl create namespace zookeeper
 helm repo add pravega https://charts.pravega.io
 helm repo update
 # 下载最新chart包
-helm pull pravega/zookeeper-operator
+helm pull pravega/zookeeper-operator --version=0.2.9
 
 helm install pravega zookeeper-operator-0.2.9.tgz -n zookeeper \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper-operator \
@@ -39,7 +39,7 @@ kubectl get pod -n zookeeper
 
 ```
 # 下载最新chart包
-helm pull pravega/zookeeper 
+helm pull pravega/zookeeper --version=0.2.9
 helm install kafka-zk zookeeper-0.2.9.tgz -n zookeeper \
 --set replicas=3 \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper \
