@@ -139,6 +139,13 @@ prometheus:
 prometheus-node-exporter:
   image:
     repository: ${repository}/prometheus/node-exporter
+kube-state-metrics:
+  image:
+    repository: registry.hisun.netwarps.com/kube-state-metrics/kube-state-metrics
+kubeEtcd:
+  service:
+    port: 2381
+    targetPort: 2381
 EOF
 ```
 
@@ -208,12 +215,159 @@ helm uninstall prometheus-community -n  monitoring
 
 ## 故障处理
 
-### grafana 开启 persistence 持久化后，使用 helm 部署报错
+### kubelet metrics down
+
+#### 问题描述
+
+查看 prometheus Status --> Targets --> monitoring/prometheus-community-kube-kubelet/0 
+
+
+其中一项 endpoint metrics 报错 访问 `https://172.26.164.105:10250/metrics` 报下面错误
 
 ```
-Error: template: kube-prometheus-stack/charts/grafana/templates/deployment.yaml:47:10: executing "kube-prometheus-stack/charts/grafana/templates/deployment.yaml" at <include "grafana.pod" .>: error calling include: template: kube-prometheus-stack/charts/grafana/templates/_pod.tpl:23:18: executing "grafana.pod" at <.Values.initChownData.image.sha>: can't evaluate field sha in type interface {}
+server returned HTTP status 401 Unauthorized
 ```
 
-临时解决：
+#### 故障原因：
 
-关闭 persistence 
+怀疑是客户端证书不同步，重启下自动同步
+
+#### 解决方法：
+
+重启 172.26.164.105 主机后恢复
+
+### kube-proxy metrics down
+
+#### 问题描述
+
+查看 prometheus Status --> Targets --> `monitoring/prometheus-community-kube-kube-proxy/0` 
+
+endpoint 监控列表所有 metrics 都报错
+
+```
+Get "http://172.26.164.103:10249/metrics": dial tcp 172.26.164.103:10249: connect: connection refused
+```
+
+##### 问题原因：
+
+kube-proxy metrics 默认监听 ip 为 127.0.0.1
+
+##### 问题解决：
+
+1、使用 kubeadm 安装k8s 前修改 `kubeadm-init.yaml`，再安装 k8s
+
+找到 `KubeProxyConfiguration ` 相关配置，修改`metricsBindAddress` 值如下
+
+```
+...
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+metricsBindAddress: 0.0.0.0:10249
+...
+```
+
+2、已经安装好 k8s 的环境操作如下
+
+编辑  configmap kube-proxy
+
+```
+kubectl edit cm kube-proxy -n kube-system
+```
+
+找到 `metricsBindAddress` 修改值如下
+
+```
+    metricsBindAddress: "0.0.0.0:10249"
+```
+
+重启 `kube-proxy`
+
+```
+kubectl rollout restart ds kube-proxy -n kube-system
+```
+
+查看 pod 状态
+
+```
+kubectl get pod -l k8s-app=kube-proxy -n kube-system
+```
+
+### kube-etcd metrics down
+
+#### 问题描述
+
+查看 prometheus Status --> Targets --> `monitoring/prometheus-community-kube-kube-etcd/0`
+
+endpoint 监控列表所有 metrics 都报错
+
+```
+Get "http://172.26.164.103:2379/metrics": read tcp 10.128.1.22:58320->172.26.164.103:2379: read: connection reset by peer
+```
+
+#### 故障原因：
+
+原因是新版本 K8s etcd metrics 换了监控端口
+
+#### 故障解决：
+
+##### 修改 etcd metrics 监控 ip
+
+1、使用 kubeadm 工具 在安装k8s前
+
+修改 `kubeadm-init.yaml`
+
+修改 etcd listen-metrics-urls 配置如下
+ 
+```
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+    ExtraArgs:
+      listen-metrics-urls=http://0.0.0.0:2381
+```
+
+2、已经安装好 k8s 的操作如下
+
+修改所有 master 主机`/etc/kubernetes/manifests/etcd.yaml`
+
+找到 `listen-metrics-urls` 配置，
+
+```
+spec:
+  containers:
+  - command:
+      ...
+      - --listen-metrics-urls=http://0.0.0.0:2381
+      ...
+```
+
+修改完成后保存，etcd 会自动重启
+
+查看 etcd 容器状态
+
+```
+docker ps -a|grep etcd
+```
+
+测试访问 etcd metrics
+
+```
+curl http://172.26.164.103:2381/metrics
+```
+
+##### 已经使用 helm 安装好的 prometheus-operator 的，如果操作如下
+
+在 helm 安装 prometheus-operator  的 `kube-prometheus-stack-values.yaml` 最下方添加如下内容
+
+```
+kubeEtcd:
+  service:
+    port: 2381
+    targetPort: 2381
+```
+
+执行更新 prometheus-operator helm
+
+```
+helm upgrade prometheus-community kube-prometheus-stack-15.4.4.tgz -f kube-prometheus-stack-values.yaml -n  monitoring
+```

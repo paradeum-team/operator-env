@@ -536,6 +536,8 @@ dns:
 etcd:
   local:
     dataDir: /var/lib/etcd
+    ExtraArgs:
+      listen-metrics-urls=http://0.0.0.0:2381
 imageRepository: $REGISTRY_REPO/google_containers
 kind: ClusterConfiguration
 kubernetesVersion: 1.21.0
@@ -547,6 +549,7 @@ scheduler: {}
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
+metricsBindAddress: 0.0.0.0:10249
 mode: ipvs
 EOF
 ```

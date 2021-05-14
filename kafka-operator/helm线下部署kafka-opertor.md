@@ -153,23 +153,6 @@ spec:
 ```
 kubectl apply -n kafka -f simplekafkacluster.yaml
 ```
-
-#### 收集 kafka 监控数据到 prometheus
-
-```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
-```
-
-修改镜像源为私有源
-
-```
-sed -i 's/ghcr.io/registry.hisun.netwarps.com/g' kafkacluster-prometheus.yaml
-```
-
-```
-kubectl apply -f kafkacluster-prometheus.yaml -n kafka
-```
-
 查看 pod 状态
 
 ```
@@ -183,6 +166,84 @@ kafka-cruisecontrol-7c87c6d9b7-qtzwx      1/1     Running   0          22h
 kafka-operator-operator-c456b7d87-b8mrd   2/2     Running   0          23h
 prometheus-kafka-prometheus-0             2/2     Running   1          7m29s
 ```
+
+#### 收集 kafka 监控数据到已安装 prometheus
+
+查看已经部署的 prometheus 相关配置
+
+```
+kubectl get prometheus prometheus-community-kube-prometheus -o yaml -n monitoring
+```
+
+看到下面相关 Selector 内容
+
+```
+  ...
+  podMonitorSelector:
+    matchLabels:
+      release: prometheus-community
+  ...
+  ruleSelector:
+    matchLabels:
+      app: kube-prometheus-stack
+      release: prometheus-community    
+  ...
+  serviceMonitorSelector:
+    matchLabels:
+      release: prometheus-community
+```
+
+下载 kafkacluster prometheus 部署示例 yaml
+
+```
+wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
+```
+
+修改镜像源为私有源
+
+```
+sed -i 's/ghcr.io/registry.hisun.netwarps.com/g' kafkacluster-prometheus.yaml
+```
+
+按已有 `prometheus`中 `Selector` 配置 修改 `kafkacluster-prometheus.yaml` 
+
+```
+...
+kind: ServiceMonitor
+metadata:
+  name: kafka-servicemonitor
+  labels:
+    ...
+    release: prometheus-community # 改为 prometheus Selector 中内容
+    ...
+kind: ServiceMonitor
+metadata:
+  name: cruisecontrol-servicemonitor
+  labels:
+    release: prometheus-community # 改为 prometheus Selector 中内容...
+kind: PrometheusRule
+metadata:
+  ...
+  labels:
+    prometheus: kafka-rules # 不变
+    app: kube-prometheus-stack # 改为 prometheus Selector 中内容
+    release: prometheus-community # 改为 prometheus Selector 中内容
+...
+# 删除下面相关内容
+kind: ServiceAccount 相关内容
+kind: ClusterRole
+kind: ClusterRoleBinding
+kind: Prometheus
+```
+
+```
+kubectl apply -f kafkacluster-prometheus.yaml -n kafka
+```
+
+导入 grafana dashboard
+
+[kafka-looking-glass.json](./grafana_dashboard/kafka-looking-glass.json)
+
 
 #### 创建 ingress
 
@@ -248,3 +309,5 @@ kubectl delete pod -l app=kafka -n kafka && kubectl delete pvc -l app=kafka -n k
 [https://github.com/banzaicloud/kafka-operator/tree/master/charts/kafka-operator](https://github.com/banzaicloud/kafka-operator/tree/master/charts/kafka-operator)
 
 [https://banzaicloud.com/docs/supertubes/kafka-operator/install-kafka-operator/](https://banzaicloud.com/docs/supertubes/kafka-operator/install-kafka-operator/)
+
+[https://github.com/amuraru/k8s-kafka-the-hard-way/blob/master/grafana-dashboard.yaml](https://github.com/amuraru/k8s-kafka-the-hard-way/blob/master/grafana-dashboard.yaml)

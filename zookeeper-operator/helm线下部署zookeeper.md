@@ -3,9 +3,9 @@
 ## 下面镜像推送到私有仓库
 
 ```
-docker.mirrors.ustc.edu.cn/pravega/zookeeper-operator:0.2.9
+docker.mirrors.ustc.edu.cn/pravega/zookeeper-operator:0.2.10
 docker.mirrors.ustc.edu.cn/lachlanevenson/k8s-kubectl:v1.16.10
-docker.mirrors.ustc.edu.cn/pravega/zookeeper:0.2.9
+docker.mirrors.ustc.edu.cn/pravega/zookeeper:0.2.10
 docker.mirrors.ustc.edu.cn/tobilg/zookeeper-webui:latest
 ```
 
@@ -20,9 +20,9 @@ kubectl create namespace zookeeper
 helm repo add pravega https://charts.pravega.io
 helm repo update
 # 下载最新chart包
-helm pull pravega/zookeeper-operator --version=0.2.9
+helm pull pravega/zookeeper-operator --version=0.2.10
 
-helm install pravega zookeeper-operator-0.2.9.tgz -n zookeeper \
+helm install pravega zookeeper-operator-0.2.10.tgz -n zookeeper \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper-operator \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl
 ```
@@ -39,8 +39,8 @@ kubectl get pod -n zookeeper
 
 ```
 # 下载最新chart包
-helm pull pravega/zookeeper --version=0.2.9
-helm install kafka-zk zookeeper-0.2.9.tgz -n zookeeper \
+helm pull pravega/zookeeper --version=0.2.10
+helm install kafka-zk zookeeper-0.2.10.tgz -n zookeeper \
 --set replicas=3 \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl \
@@ -58,7 +58,7 @@ kubectl get pod -n zookeeper
 
 ```
 # 根据环境修改应用域名后缀
-APP_DOMAIN=apps164103.hisun.local
+APP_DOMAIN=apps164103.hisun.k8s
 
 cat<<EOF > zkweb.yaml
 apiVersion: apps/v1
@@ -167,10 +167,10 @@ kafka-zk-zookeeper-headless   ClusterIP   None             <none>        2181/TC
 zkweb                         ClusterIP   10.105.215.100   <none>        8080/TCP                              5m14s
 ```
 
-解析 apps164103.hisun.local 并访问
+解析 apps164103.hisun.k8s 并访问
 
 ```
-zkweb.apps164103.hisun.local
+zkweb.apps164103.hisun.k8s
 ```
 
 首页输入
