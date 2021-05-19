@@ -294,7 +294,7 @@ ipvsadm -ln
 所有主机安装 chonyd
 
 ```
-yum install -y chronyd
+yum install -y chrony
 ```
 
 所有 master 开放server 同步权限 
@@ -403,7 +403,7 @@ server=/cluster.local/10.96.0.10
 EOF
 ```
 
-默认能用 router 泛解析到 LB
+默认域名后缀泛解析到 LB
 
 ```
 cat <<EOF | sudo tee /etc/dnsmasq.d/address-dns.conf

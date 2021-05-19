@@ -179,8 +179,45 @@ zkweb.apps164103.hisun.k8s
 kafka-zk-zookeeper-client.zookeeper.svc:2181
 ```
 
+## 收集 zookeeper metrics 数据
+
+创建`zookeeper-podMonitor.yaml`
+
+```
+cat>zookeeper-podMonitor.yaml<<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: zookeeper
+  #为了让prometheus发现zookeeper，注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  podMetricsEndpoints:
+  - interval: 15s
+    port: metrics
+  selector:
+    matchLabels:
+      app: kafka-zk-zookeeper
+  namespaceSelector:
+    any: true
+EOF
+```
+
+执行创建 podMonitor
+
+```
+kubectl apply -f zookeeper-podMonitor.yaml -n zookeeper
+```
+
+## 导入 grafana 模板
+
+打开 grafana 页面导入 [Zookeeper-by-Prometheus.json](./grafana-dashboards/Zookeeper-by-Prometheus.json)
+
 ## 参考
 
 https://github.com/paradeum-team/operator-env/blob/main/kafka-operator/kafka-operator.md
 
 https://github.com/pravega/zookeeper-operator
+
+https://grafana.com/grafana/dashboards/10465
