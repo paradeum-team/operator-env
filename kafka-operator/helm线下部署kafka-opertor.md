@@ -167,8 +167,55 @@ kafka-operator-operator-c456b7d87-b8mrd   2/2     Running   0          23h
 prometheus-kafka-prometheus-0             2/2     Running   1          7m29s
 ```
 
-#### 收集 kafka 监控数据到已安装 prometheus
+#### 对接 prometheus 监控
 
+下载 kafkacluster prometheus 部署示例 yaml
+
+```
+wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
+```
+
+修改镜像源为私有源
+
+```
+sed -i 's/ghcr.io/registry.hisun.netwarps.com/g' kafkacluster-prometheus.yaml
+```
+
+然后按下面方法其中一项对接监控
+
+##### 方法一： 使用kafka独立prmetheus  收集监控数据
+
+修改默认使用的 storageClass
+
+```
+sed  -i "s/storageClass: 'gp2'/storageClass: 'local-path'/g" kafkacluster-prometheus.yaml
+```
+
+修改默认 namespace 为 kafka
+
+```
+sed -i 's/namespace: default/namespace: kafka/g' kafkacluster-prometheus.yaml
+```
+
+执行部署 kafka 自带监控
+
+```
+kubectl apply -f kafkacluster-prometheus.yaml -n kafka
+```
+
+grafana 创建Data Source
+
+grafana 首页左边菜单 Configuration-->Data sources
+
+点击`Add data source`
+
+`Name` 输入 `Prometheus-kafka`
+
+`URL` 输入 `http://prometheus-operated.kafka.svc:9090`
+
+点击 `Save & Test`
+
+##### 方法二： 收集 已经存在 prometheus 收集 kafka 监控数据
 查看已经部署的 prometheus 相关配置
 
 ```
@@ -191,18 +238,6 @@ kubectl get prometheus prometheus-community-kube-prometheus -o yaml -n monitorin
   serviceMonitorSelector:
     matchLabels:
       release: prometheus-community
-```
-
-下载 kafkacluster prometheus 部署示例 yaml
-
-```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
-```
-
-修改镜像源为私有源
-
-```
-sed -i 's/ghcr.io/registry.hisun.netwarps.com/g' kafkacluster-prometheus.yaml
 ```
 
 按已有 `prometheus`中 `Selector` 配置 修改 `kafkacluster-prometheus.yaml` 
@@ -236,14 +271,19 @@ kind: ClusterRoleBinding
 kind: Prometheus
 ```
 
+执行部署
+
 ```
 kubectl apply -f kafkacluster-prometheus.yaml -n kafka
 ```
 
-导入 grafana dashboard
+
+##### 导入 grafana dashboard
 
 [kafka-looking-glass.json](./grafana_dashboard/kafka-looking-glass.json)
 
+
+注意：使用独立 prometheus 数据源查看图表时需要选择 data_source 为 Prometheus-kafka 再点击保存
 
 #### 创建 ingress
 
