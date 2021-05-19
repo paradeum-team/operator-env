@@ -1,0 +1,162 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gitlab-exporter
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  endpoints:
+  - interval: 15s
+    port: gitlab-exporter
+  selector:
+    matchLabels:
+      app: gitlab-exporter
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gitaly
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  endpoints:
+  - interval: 15s
+    port: gitaly-metrics
+  selector:
+    matchLabels:
+      app: gitaly
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  endpoints:
+  - interval: 15s
+    port: http-metrics
+  job_name: postgres
+  selector:
+    matchLabels:
+      app: postgresql
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+  selector:
+    matchLabels:
+      app: redis
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: gitlab-sidekiq
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  podMetricsEndpoints:
+  - interval: 15s
+    port: metrics
+  selector:
+    matchLabels:
+      app: sidekiq
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: gitlab-runner
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  podMetricsEndpoints:
+  - interval: 15s
+    port: metrics
+  selector:
+    matchLabels:
+      app: gitlab-gitlab-runner
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: webservice
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  podMetricsEndpoints:
+  - interval: 15s
+    port: webservice
+    path: "/-/metrics"
+  selector:
+    matchLabels:
+      app: webservice
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: gitlab-workhorse
+  namespace: gitlab
+  #注意prometheus-community值与helm 安装prometheus时创建的名字一致。否则无效。
+  labels:
+    release: prometheus-community
+spec:
+  podMetricsEndpoints:
+  - interval: 15s
+    port: workhorse
+    path: "/-/metrics"
+  selector:
+    matchLabels:
+      app: webservice
+  namespaceSelector:
+    matchNames:
+    - gitlab
+  jobLabel: app
