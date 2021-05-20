@@ -297,7 +297,7 @@ ipvsadm -ln
 yum install -y chrony
 ```
 
-所有 master 开放server 同步权限 
+所有 `master` 开放server 同步权限 
 
 ```
 grep '^allow 0.0.0.0/0' /etc/chrony.conf || echo "allow 0.0.0.0/0" >> /etc/chrony.conf
@@ -305,7 +305,16 @@ grep '^allow 0.0.0.0/0' /etc/chrony.conf || echo "allow 0.0.0.0/0" >> /etc/chron
 systemctl restart chronyd
 ```
 
-所有 node 主机配置 chronyd (master 默认配置不修改)
+查检 所有 `master` 节点 123 端口监听地址
+
+```
+netstat -anup|grep 123
+
+#  输入类似下面内容，确认监听 0 0.0.0.0:123
+udp        0      0 0.0.0.0:123             0.0.0.0:*                           57750/chronyd
+```
+
+所有 `node` 主机配置 chronyd (master 默认配置不修改)
 
 ```
 LB_IP=172.26.181.233
@@ -323,7 +332,7 @@ EOF
 systemctl restart chronyd
 ```
 
-#### 设置时区
+#### 所有主机设置时区
 
 ```
 # 设置时区
@@ -785,6 +794,7 @@ kubectl create namespace ingress
 
 helm pull ingress-nginx/ingress-nginx
 
+
 # 创建 values.yaml
 
 REGISTRY=registry.hisun.netwarps.com
@@ -812,8 +822,10 @@ controller:
             operator: Exists
 EOF
 
-# 更新或创建 ingress
-helm upgrade ingress-nginx ingress-nginx-3.29.0.tgz -f values.yaml -n ingress
+# 查看已经下载的 ingress-nginx.xxx.tgz 文件名
+ls 
+# 更新或创建 ingress (修改 ingress-nginx.xxx.tgz)
+helm upgrade --ingress ingress-nginx ingress-nginx-3.29.0.tgz -f values.yaml -n ingress
 ```
 
 
@@ -863,9 +875,7 @@ https://172.26.181.233
 kubectl get pod -n ingress
 # 获取pod name
 POD_NAME=$(kubectl get pods --field-selector=status.phase=Running -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}' -n ingress)
-kubectl exec -it $POD_NAME -- /nginx-ingress-controller --version  -n ingress
-# 查看 版本
-kubectl -n ingress exec -it $POD_NAME -- /nginx-ingress-controller --version
+kubectl -n ingress exec -it $POD_NAME -- /nginx-ingress-controller --version # 查看 版本
 ```
 
 ## 安装dashboard
