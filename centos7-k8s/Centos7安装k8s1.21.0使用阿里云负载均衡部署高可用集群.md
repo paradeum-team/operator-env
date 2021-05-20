@@ -608,45 +608,6 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 记录 kubeadm init 输出的 kubeadm join 命令。 你需要此命令将节点加入集群。
 
 
-### 配置 coredns forward
-
-coredns forward 指向到 dns lb 
-
-```
-DNS_SERVER=172.26.181.233:53
-cat > coredns-config.yaml <<EOF
-apiVersion: v1
-data:
-  Corefile: |
-    .:53 {
-        errors
-        health {
-           lameduck 5s
-        }
-        ready
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
-           pods insecure
-           fallthrough in-addr.arpa ip6.arpa
-           ttl 30
-        }
-        prometheus :9153
-        forward . $DNS_SERVER {
-           max_concurrent 1000
-        }
-        cache 30
-        loop
-        reload
-        loadbalance
-    }
-kind: ConfigMap
-metadata:
-  name: coredns
-  namespace: kube-system
-EOF
-
-kubectl apply -f coredns-config.yaml -n kube-system
-kubectl rollout restart deploy coredns -n kube-system
-```
 
 ### 重置 kubeadm 安装配置（初始化异常中断重装时使用）
 
@@ -660,7 +621,7 @@ rm -f $HOME/.kube/config
 
 在 master2-3 执行
 
-添加 MASTER_LB_DNS 解析到本机
+#### 添加 MASTER_LB_DNS 解析到 MASTER1 IP, 因为目前只有 master1 启动了 api-server
 
 ```
 # 指定网卡
@@ -675,7 +636,7 @@ MASTER_LB_PORT=6443
 grep $MASTER_LB_DNS /etc/hosts &>/dev/null||echo "$MASTER1_IP $MASTER_LB_DNS" >> /etc/hosts
 ```
 
-执行先前由第一个节点上的 kubeadm init 输出提供给您的 join 控制平面命令。 它看起来应该像这样：
+#### 执行先前由第一个节点上的 kubeadm init 输出提供给您的 join 控制平面命令。 它看起来应该像这样：
 
 ```
 kubeadm join api-server.kont.k8s:6443 --token abcdef.0123456789abcdef \
@@ -683,7 +644,7 @@ kubeadm join api-server.kont.k8s:6443 --token abcdef.0123456789abcdef \
 --control-plane --certificate-key 0b37558dc8f7ae79703754816b0ab65641e0f90050ad4ffc59d8fcca5e6314df
 ```
 
-api server dns 改为本机 IP
+#### 本机的 api-server 正常添加后,api server dns 改为本机 IP
 
 ```
 sed -i "s/.*api-server.kont.k8s/$LOCAL_IP api-server.kont.k8s/g" /etc/hosts
@@ -751,6 +712,50 @@ node3.kont.k8s     Ready    <none>                 15m     v1.21.0
 
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
+```
+
+## 配置 coredns forward
+
+在 master1 操作
+
+coredns默认使用的本机的/etc/resolv.conf, 因为阿里云的 LB 在后面主机不能访问 LB 端口，会导致 pod 中不能正常使用外部 dns 解析
+
+所以修改 coredns forward 指向到 lb 的 dns转发 端口 
+
+```
+DNS_SERVER=172.26.181.233:53
+cat > coredns-config.yaml <<EOF
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . $DNS_SERVER {
+           max_concurrent 1000
+        }
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+EOF
+
+kubectl apply -f coredns-config.yaml -n kube-system
+kubectl rollout restart deploy coredns -n kube-system
 ```
 
 ## 安装heml
