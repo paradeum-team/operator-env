@@ -84,6 +84,8 @@ spec:
           - name: applog
             mountPath: /data/kont
             readOnly: true
+          - name: beat-logs
+            mountPath: /usr/share/filebeat/logs
           - mountPath: /etc/localtime
             name: localtime
             readOnly: true
@@ -91,6 +93,10 @@ spec:
         - name: applog
           hostPath:
             path: /data/kont/
+            type: DirectoryOrCreate
+        - name: beat-logs
+          hostPath:
+            path: /usr/share/filebeat/kont_filebeat_logs
             type: DirectoryOrCreate
         - name: localtime
           hostPath:

@@ -185,7 +185,7 @@ kibana 默认登录账号为 elastic, 查看密码
 kubectl get secret kont-es-elastic-user -o=jsonpath='{.data.elastic}' -n elastic-system| base64 --decode; echo
 ```
 
-## 安装 k8s 集群使用 filebeat
+## 安装 收集 k8s pod 日志 filebeat
 
 参考
 
@@ -257,6 +257,8 @@ spec:
             mountPath: /var/log/pods
           - name: varlibdockercontainers
             mountPath: /var/lib/docker/containers
+          - name: beat-logs
+            mountPath: /usr/share/filebeat/logs
           - mountPath: /etc/localtime
             name: localtime
             readOnly: true
@@ -275,6 +277,10 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
+        - name: beat-logs
+          hostPath:
+            path: /usr/share/filebeat/k8s_filebeat_logs
+            type: DirectoryOrCreate
         - name: localtime
           hostPath:
             path: /etc/localtime
@@ -325,6 +331,12 @@ kubectl apply -f k8s-filebeat.yaml -n elastic-system
 kubectl get pod -n elastic-system -o wide
 ```
 
+filebeat-* kibana索引自动创建，可以直接登录 kibana，按 filebeat-* 索引 查询 k8s pods 日志
+
+## 使用journalbeat收集系统journal日志
+
+参考：[使用journalbeat收集系统journal日志](./使用journalbeat收集系统journal日志.md)
+
 ## 参考: 
 
 [helm 线下部署elasticsearch](https://github.com/paradeum-team/operator-env/blob/main/elasticsearch/helm%20%E7%BA%BF%E4%B8%8B%E5%AE%89%E8%A3%85elasticsearch.md)
@@ -332,3 +344,4 @@ kubectl get pod -n elastic-system -o wide
 [Install ECK using the Helm chart](https://www.elastic.co/guide/en/cloud-on-k8s/master/k8s-install-helm.html)
 
 [cloud-on-k8s-beat-configuration](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-beat-configuration.html)
+

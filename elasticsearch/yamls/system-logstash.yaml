@@ -1,0 +1,109 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-logstash-configmap
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  logstash.conf: |
+    # all input will come from filebeat, no local logs
+    input {
+      kafka {
+        bootstrap_servers => "kafka-headless.kafka.svc:29092"
+        group_id => "system"
+        client_id => "ls-system"
+        consumer_threads => 4
+        topics => ["journalbeat-system"]
+        codec => json { charset => "UTF-8" }
+      }
+    }
+    output {
+      elasticsearch {
+        index => "journalbeat-system"
+        action => "create"
+        hosts => [ "${ES_HOST}" ]
+        user => "${ELASTICSEARCH_USER}"
+        password => "${ELASTICSEARCH_PASSWORD}"
+        #cacert => '/etc/logstash/certificates/ca.crt'
+      }
+    }
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: system-logstash-data
+  namespace: elastic-system
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: system-logstash
+  namespace: elastic-system
+  labels:
+    app: system-logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: system-logstash
+  template:
+    metadata:
+      labels:
+        app: system-logstash
+    spec:
+      containers:
+      - image: registry.hisun.netwarps.com/logstash/logstash:7.12.0
+        name: system-logstash
+        ports:
+        - containerPort: 25826
+        - containerPort: 5044
+        env:
+        - name: ES_HOST
+          value: "http://kont-es-http.elastic-system.svc:9200"
+        - name: ELASTICSEARCH_USER
+          value: "elastic"
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kont-es-elastic-user
+              key: elastic
+        resources: {}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/config
+        - name: logstash-pipeline-volume
+          mountPath: /usr/share/logstash/pipeline
+        - name: data
+          mountPath: "/usr/share/logstash/data/"
+          subPath: "data"
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: system-logstash-configmap
+          items:
+            - key: logstash.yml
+              path: logstash.yml
+      - name: logstash-pipeline-volume
+        configMap:
+          name: system-logstash-configmap
+          items:
+            - key: logstash.conf
+              path: logstash.conf
+      - name: data
+        persistentVolumeClaim:
+          claimName: system-logstash-data
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
