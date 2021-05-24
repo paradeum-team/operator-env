@@ -1,0 +1,97 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-journalbeat-configmap
+data:
+  journalbeat.yml: |
+    logging.level: debug
+    journalbeat.inputs:
+    - paths: []
+      seek: cursor
+    processors:
+    - add_cloud_metadata: ~
+    - add_docker_metadata: ~
+    output.kafka:
+      enabled: true
+      hosts: ["kafka-headless.kafka.svc:29092"]
+      topic: 'journalbeat-system'
+      partition.round_robin:
+        reachable_only: false
+      required_acks: 1
+      compression: gzip
+      max_message_bytes: 1000000
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: system-journalbeat
+  namespace: elastic-system
+  labels:
+    app: system-journalbeat
+spec:
+  selector:
+    matchLabels:
+      app: system-journalbeat
+  template:
+    metadata:
+      labels:
+        app: system-journalbeat
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/os: linux
+      hostNetwork: true
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: journalbeat
+        args:
+        - "-e"
+        - "-strict.perms=false"
+        image: registry.hisun.netwarps.com/beats/journalbeat:7.12.1
+        securityContext:
+          runAsUser: 0
+          # If using Red Hat OpenShift uncomment this:
+          privileged: true
+        volumeMounts:
+        - name: varlog-journal
+          mountPath: /var/log/journal
+        - name: machine-id
+          mountPath: /etc/machine-id
+        - name: run-systemd
+          mountPath: /run/systemd
+        - name: beat-logs
+          mountPath: /usr/share/journalbeat/logs
+        - name: journalbeat-volume
+          mountPath: /usr/share/journalbeat/journalbeat.yml
+          subPath: journalbeat.yml
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+      volumes:
+      - name: varlog-journal
+        hostPath:
+          path: /var/log/journal
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+      - name: run-systemd
+        hostPath:
+          path: /run/systemd
+      - name: beat-logs
+        hostPath:
+          path: /usr/share/journalbeat/journalbeat_logs
+          type: DirectoryOrCreate
+      - name: journalbeat-volume
+        configMap:
+          name: system-journalbeat-configmap
+          items:
+            - key: journalbeat.yml
+              path: journalbeat.yml
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
