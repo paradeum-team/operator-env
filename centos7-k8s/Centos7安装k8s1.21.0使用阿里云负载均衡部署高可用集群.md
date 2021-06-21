@@ -825,7 +825,7 @@ EOF
 # 查看已经下载的 ingress-nginx.xxx.tgz 文件名
 ls 
 # 更新或创建 ingress (修改 ingress-nginx.xxx.tgz)
-helm upgrade --ingress ingress-nginx ingress-nginx-3.29.0.tgz -f values.yaml -n ingress
+helm upgrade --install ingress-nginx ingress-nginx-3.29.0.tgz -f values.yaml -n ingress
 ```
 
 
