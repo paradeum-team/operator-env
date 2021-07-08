@@ -51,7 +51,7 @@ k8s.gcr.io/kube-state-metrics/kube-state-metrics:v1.9.8
 ## 下载chart
 
 ```
-helm pull prometheus-community/kube-prometheus-stack --version 
+helm pull prometheus-community/kube-prometheus-stack --version 15.4.4
 ```
 
 ## 创建 namespace
