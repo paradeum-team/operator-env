@@ -358,7 +358,7 @@ NTP synchronized: yes
 ### 所有节点配置 ulimit
 
 ```
-cat<<EOF|sudo tee /etc/security/99-limits.conf
+cat<<EOF|sudo tee /etc/security/limits.d/99-limits.conf
 * - nofile 65535
 * - fsize unlimited
 * - nproc 65535 #unlimited nproc for *

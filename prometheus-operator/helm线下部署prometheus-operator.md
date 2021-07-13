@@ -36,6 +36,7 @@ https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-state-
 ```
 docker.io/jettech/kube-webhook-certgen:v1.5.0
 docker.io/grafana/grafana:7.5.5
+registry.hisun.netwarps.com/grafana/grafana:v7.5.9-custom.1
 docker.io/bats/bats:v1.1.0
 quay.io/prometheus/alertmanager:v0.21.0
 quay.io/prometheus-operator/prometheus-operator:v0.47.0
@@ -100,6 +101,7 @@ grafana:
     size: 1Gi
   image:
     repository: ${repository}/grafana/grafana
+    tag: v7.5.9-custom.1
   initChownData:
     image:
       repository: ${repository}/library/busybox
