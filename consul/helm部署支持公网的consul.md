@@ -7,6 +7,15 @@ hashicorp/consul-k8s:0.25.0
 envoyproxy/envoy-alpine:v1.16.0
 ```
 
+## consul 节点防火墙开放端口
+
+协议|端口
+-----|-----
+tcp|8300
+tcp|8301
+udp|8302
+tcp|8302
+
 ## 下载 chart
 
 ```
