@@ -129,7 +129,7 @@ vrrp_script check_apiserver {
 }
 
 vrrp_instance master-vip {
-    state MASTER
+    state BACKUP # master1 为 MASTER, 其它 master 为 BACKUP
     interface eth0
     virtual_router_id 250
     priority 100
