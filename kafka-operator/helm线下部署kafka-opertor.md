@@ -21,18 +21,18 @@ https://github.com/banzaicloud/kafka-operator/blob/master/charts/kafka-operator/
 #### 相关镜像推送到私有仓库
 
 ```
-docker.mirrors.ustc.edu.cn/kubesphere/kube-rbac-proxy:v0.5.0
-ghcr.io/banzaicloud/kafka-operator:v0.14.0
-ghcr.io/banzaicloud/jmx-javaagent:0.14.0
-ghcr.io/banzaicloud/cruise-control:2.5.23
-ghcr.io/banzaicloud/kafka:2.13-2.6.0-bzc.1
+docker.mirrors.ustc.edu.cn/kubesphere/kube-rbac-proxy:v0.8.0
+ghcr.io/banzaicloud/kafka-operator:v0.18.3
+ghcr.io/banzaicloud/jmx-javaagent:0.15.0
+ghcr.io/banzaicloud/cruise-control:2.5.68
+ghcr.io/banzaicloud/kafka:2.13-2.8.1
 ```
 
 #### 在安装chart之前，必须首先安装kafka-operator CustomResourceDefinition资源。这是一个单独的步骤，允许您轻松卸载和重新安装kafka-operator，而不删除您已安装的自定义资源。
 
 ```
-wget https://github.com/banzaicloud/kafka-operator/releases/download/v0.14.0/kafka-operator.crds.yaml
-kubectl apply -f kafka-operator.crds.yaml
+wget https://github.com/banzaicloud/kafka-operator/releases/download/v0.18.3/kafka-operator.crds.yaml
+kubectl create --validate=false  -f kafka-operator.crds.yaml
 ```
 
 #### 添加 repo
@@ -45,7 +45,9 @@ helm repo update
 #### 下载 chart
 
 ```
-helm pull banzaicloud-stable/kafka-operator --version v0.4.6
+mkdir ~/kafka
+cd ~/kafka
+helm pull banzaicloud-stable/kafka-operator --version v0.4.13
 ```
 
 #### 自定义 values
@@ -59,7 +61,7 @@ operator:
   annotations: {}
   image:
     repository: ${repository}/banzaicloud/kafka-operator
-    tag: v0.15.1
+    tag: v0.18.3
     pullPolicy: IfNotPresent
 certManager:
   namespace: "cert-manager"
@@ -80,7 +82,7 @@ EOF
 ```
 
 ```
-helm install kafka-operator --create-namespace --namespace=kafka -f kafka-operator-values.yaml  kafka-operator-0.4.6.tgz
+helm upgrade --install kafka-operator --create-namespace --namespace=kafka -f kafka-operator-values.yaml  kafka-operator-0.4.13.tgz
 ```
 
 查看 pod
@@ -89,10 +91,10 @@ helm install kafka-operator --create-namespace --namespace=kafka -f kafka-operat
 kubectl get pod -n kafka
 ```
 
-#### 部署 kakfa
+#### 部署 kakfa(只内部使用)
 
 ```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/simplekafkacluster.yaml
+wget https://raw.githubusercontent.com/banzaicloud/koperator/v0.18.3/config/samples/simplekafkacluster.yaml
 ```
 
 获取 zk svc 名称 
@@ -167,12 +169,108 @@ kafka-operator-operator-c456b7d87-b8mrd   2/2     Running   0          23h
 prometheus-kafka-prometheus-0             2/2     Running   1          7m29s
 ```
 
+#### 部署外部使用 kafka 
+
+下载 kafka 部署 文件
+
+```
+wget https://github.com/banzaicloud/koperator/raw/chart/kafka-operator/0.4.13/config/samples/simplekafkacluster-with-nodeport-external.yaml
+```
+
+分配内网独立使用ip, 公有主机需要申请内网 VIP
+
+```
+172.16.152.20
+172.16.142.252
+172.16.233.132
+```
+
+修改 simplekafkacluster-with-nodeport-external.yaml 中下面相关内容
+
+```
+spec:
+  ...
+  zkAddresses:
+    - "kafka-zk-zookeeper-client.zookeeper.svc:2181" # zk 内部地址
+  ...
+  clusterImage: "registry.hisun.netwarps.com/banzaicloud/kafka:2.13-2.8.1"
+  readOnlyConfig: |
+    auto.create.topics.enable=true
+   ...
+     brokerConfigGroups:
+    default:
+      storageConfigs:
+        - mountPath: "/kafka-logs"
+          pvcSpec:
+            storageClassName: local-path # 当前 k8s 集群选择使用的 storageclass
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+   ...
+     brokers:
+    - id: 0
+      brokerConfigGroup: "default"
+      brokerConfig:
+        nodePortExternalIP:
+          external: "172.16.152.20" # if "hostnameOverride" is not set for "external" external listener than broker is advertised on this IP
+    - id: 1
+      brokerConfigGroup: "default"
+      brokerConfig:
+        nodePortExternalIP:
+          external: "172.16.142.252" # if "hostnameOverride" is not set for "external" external listener than broker is advertised on this IP
+    - id: 2
+      brokerConfigGroup: "default"
+      brokerConfig:
+        nodePortExternalIP:
+          external: "172.16.233.132" # if "hostnameOverride" is not set for "external" external listener than broker is advertised on this IP
+   
+```
+
+查看 kafka pod 
+
+```
+kubectl get pod -n kafka
+```
+
+```
+NAME                                       READY   STATUS    RESTARTS   AGE
+kafka-0-9wgvh                              1/1     Running   0          91m
+kafka-1-b79qg                              1/1     Running   0          92m
+kafka-2-7zcbw                              1/1     Running   0          91m
+kafka-cruisecontrol-7986b955cc-tjdsd       1/1     Running   0          4h14m
+kafka-operator-operator-56d57954b8-txnqx   2/2     Running   0          4h41m
+```
+
+查看 kafka 相关 svc
+
+```
+kubectl get svc -n kafka
+```
+显示如下
+
+```
+NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP      PORT(S)                                 AGE
+kafka-0                       ClusterIP   10.109.176.191   <none>           29092/TCP,29093/TCP,9094/TCP,9020/TCP   4h16m
+kafka-0-external              NodePort    10.98.218.228    172.16.152.20    9094:32000/TCP                          4h16m
+kafka-1                       ClusterIP   10.101.6.215     <none>           29092/TCP,29093/TCP,9094/TCP,9020/TCP   4h15m
+kafka-1-external              NodePort    10.98.255.216    172.16.142.252   9094:32001/TCP                          4h16m
+kafka-2                       ClusterIP   10.97.133.183    <none>           29092/TCP,29093/TCP,9094/TCP,9020/TCP   4h14m
+kafka-2-external              NodePort    10.109.106.200   172.16.233.132   9094:32002/TCP                          4h16m
+kafka-all-broker              ClusterIP   10.102.236.252   <none>           29092/TCP,29093/TCP,9094/TCP            4h16m
+kafka-cruisecontrol-svc       ClusterIP   10.103.205.205   <none>           8090/TCP,9020/TCP                       4h13m
+kafka-operator-alertmanager   ClusterIP   10.97.164.125    <none>           9001/TCP                                7h49m
+kafka-operator-authproxy      ClusterIP   10.102.177.213   <none>           8443/TCP                                7h49m
+kafka-operator-operator       ClusterIP   10.105.112.44    <none>           443/TCP                                 7h49m
+```
+
 #### 对接 prometheus 监控
 
 下载 kafkacluster prometheus 部署示例 yaml
 
 ```
-wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.15.1/config/samples/kafkacluster-prometheus.yaml
+wget https://raw.githubusercontent.com/banzaicloud/kafka-operator/v0.18.3/config/samples/kafkacluster-prometheus.yaml
 ```
 
 修改镜像源为私有源
@@ -280,12 +378,12 @@ kubectl apply -f kafkacluster-prometheus.yaml -n kafka
 
 ##### 导入 grafana dashboard
 
-[kafka-looking-glass.json](./grafana_dashboard/kafka-looking-glass.json)
+[kafka-looking-glass.json](./grafana-dashboard/kafka-looking-glass.json)
 
 
 注意：使用独立 prometheus 数据源查看图表时需要选择 data_source 为 Prometheus-kafka 再点击保存
 
-#### 创建 ingress
+#### 创建 kafka-cruisecontrol ingress（operator 自带管理页面）
 
 创建 kafka-cruisecontrol-ingress.yaml（根据环境修改 host）
 
@@ -319,6 +417,9 @@ kubectl apply -f kafka-cruisecontrol-ingress.yaml -n kafka
 
 域名解析后访问ui： `http://kafka-cruisecontrol.apps164103.hisun.k8s/`
 
+#### 部署 cmka (原 kafna-manager)
+
+参考：[helm安装cmak-operator(cmak以前叫kafka manager).md](./helm安装cmak-operator(cmak以前叫kafka manager).md)
 
 ## 故障处理
 
@@ -351,3 +452,7 @@ kubectl delete pod -l app=kafka -n kafka && kubectl delete pvc -l app=kafka -n k
 [https://banzaicloud.com/docs/supertubes/kafka-operator/install-kafka-operator/](https://banzaicloud.com/docs/supertubes/kafka-operator/install-kafka-operator/)
 
 [https://github.com/amuraru/k8s-kafka-the-hard-way/blob/master/grafana-dashboard.yaml](https://github.com/amuraru/k8s-kafka-the-hard-way/blob/master/grafana-dashboard.yaml)
+
+https://github.com/banzaicloud/koperator/tree/master/charts/kafka-operator
+
+https://github.com/banzaicloud/koperator/blob/chart/kafka-operator/0.4.13/config/samples/simplekafkacluster-with-nodeport-external.yaml

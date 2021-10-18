@@ -3,26 +3,23 @@
 ## 下面镜像推送到私有仓库
 
 ```
-docker.mirrors.ustc.edu.cn/pravega/zookeeper-operator:0.2.10
-docker.mirrors.ustc.edu.cn/lachlanevenson/k8s-kubectl:v1.16.10
-docker.mirrors.ustc.edu.cn/pravega/zookeeper:0.2.10
-docker.mirrors.ustc.edu.cn/tobilg/zookeeper-webui:latest
-```
-
-## 新建namespace
-```
-kubectl create namespace zookeeper
+docker.io/pravega/zookeeper-operator:0.2.13
+docker.io/lachlanevenson/k8s-kubectl:v1.16.10
+docker.io/pravega/zookeeper:0.2.13
+docker.io/tobilg/zookeeper-webui:latest
 ```
 
 ## 部署zookeeper-operator
+
+参考：https://github.com/pravega/zookeeper-operator/tree/master/charts/zookeeper-operator
 
 ```
 helm repo add pravega https://charts.pravega.io
 helm repo update
 # 下载最新chart包
-helm pull pravega/zookeeper-operator --version=0.2.10
+helm pull pravega/zookeeper-operator --version=0.2.13
 
-helm install pravega zookeeper-operator-0.2.10.tgz -n zookeeper \
+helm install pravega zookeeper-operator-0.2.13.tgz -n zookeeper  --create-namespace \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper-operator \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl
 ```
@@ -39,8 +36,8 @@ kubectl get pod -n zookeeper
 
 ```
 # 下载最新chart包
-helm pull pravega/zookeeper --version=0.2.10
-helm install kafka-zk zookeeper-0.2.10.tgz -n zookeeper \
+helm pull pravega/zookeeper --version=0.2.13
+helm install kafka-zk zookeeper-0.2.13.tgz -n zookeeper \
 --set replicas=3 \
 --set image.repository=registry.hisun.netwarps.com/pravega/zookeeper \
 --set hooks.image.repository=registry.hisun.netwarps.com/lachlanevenson/k8s-kubectl \
@@ -57,9 +54,6 @@ kubectl get pod -n zookeeper
 创建 部署yaml
 
 ```
-# 根据环境修改应用域名后缀
-APP_DOMAIN=apps164103.hisun.k8s
-
 cat<<EOF > zkweb.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -89,7 +83,7 @@ spec:
       containers:
         - env:
             - name: ZK_DEFAULT_NODE
-              value: 'zookeeper-client:2181'
+              value: 'kafka-zk-zookeeper-client.zookeeper.svc:2181'
           image: 'registry.hisun.netwarps.com/tobilg/zookeeper-webui:latest'
           imagePullPolicy: Always
           securityContext:
@@ -133,7 +127,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: zkweb.${APP_DOMAIN}
+  - host: zkweb.apps92250.hisun.k8s
     http:
       paths:
       - path: /
@@ -167,10 +161,10 @@ kafka-zk-zookeeper-headless   ClusterIP   None             <none>        2181/TC
 zkweb                         ClusterIP   10.105.215.100   <none>        8080/TCP                              5m14s
 ```
 
-解析 apps164103.hisun.k8s 并访问
+解析 zkweb.apps92250.hisun.k8s 并访问
 
 ```
-zkweb.apps164103.hisun.k8s
+zkweb.apps92250.hisun.k8s
 ```
 
 首页输入
@@ -213,6 +207,8 @@ kubectl apply -f zookeeper-podMonitor.yaml -n zookeeper
 ## 导入 grafana 模板
 
 打开 grafana 页面导入 [Zookeeper-by-Prometheus.json](./grafana-dashboards/Zookeeper-by-Prometheus.json)
+
+Cluster 选择 zookeeper/zookeeper
 
 ## 参考
 
