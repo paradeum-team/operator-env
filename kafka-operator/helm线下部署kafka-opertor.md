@@ -117,6 +117,11 @@ spec:
   ...
   readOnlyConfig: |
     auto.create.topics.enable=true
+    default.replication.factor=2
+    num.partitions=32
+    cruise.control.metrics.topic.auto.create=true
+    cruise.control.metrics.topic.num.partitions=2
+    cruise.control.metrics.topic.replication.factor=2
   ...
   clusterImage: "registry.hisun.netwarps.com/banzaicloud/kafka:2.13-2.6.0-bzc.1"
   ...
