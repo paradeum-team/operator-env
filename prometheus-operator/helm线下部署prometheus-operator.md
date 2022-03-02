@@ -99,6 +99,8 @@ grafana:
     enabled: true
     storageClassName: "nfs3-client"
     size: 1Gi
+  deploymentStrategy:
+    type: Recreate
   image:
     repository: ${repository}/grafana/grafana
     tag: v7.5.9-custom.1
@@ -319,7 +321,7 @@ Get "http://172.26.164.103:2379/metrics": read tcp 10.128.1.22:58320->172.26.164
 修改 `kubeadm-init.yaml`
 
 修改 etcd listen-metrics-urls 配置如下
- 
+
 ```
 etcd:
   local:

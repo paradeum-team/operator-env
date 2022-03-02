@@ -97,13 +97,25 @@ grafana:
     hosts: ["grafana.apps92250.hisun.k8s"]
     pathType: ImplementationSpecific
   replicas: 1
+  grafana.ini:
+    paths:
+      data: /var/lib/grafana/
+      logs: /var/log/grafana
+      plugins: /mnt # 自定义镜像插件安装到此目录, 修改插件目录是为了自定义镜像中的插件不被覆盖
+      provisioning: /etc/grafana/provisioning
+    analytics:
+      check_for_updates: true
+    log:
+      mode: console
+    grafana_net:
+      url: https://grafana.net
   persistence:
     enabled: true
     storageClassName: "nfs4-client"
     size: 1Gi
   image:
     repository: registry.hisun.netwarps.com/grafana/grafana
-    tag: 8.2.1
+    tag: 8.3.7-custom.1 # 自定义镜像
   initChownData:
     image:
       repository: registry.hisun.netwarps.com/library/busybox
@@ -326,7 +338,7 @@ Get "http://172.26.164.103:2379/metrics": read tcp 10.128.1.22:58320->172.26.164
 修改 `kubeadm-init.yaml`
 
 修改 etcd listen-metrics-urls 配置如下
- 
+
 ```
 etcd:
   local:
